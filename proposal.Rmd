@@ -1,0 +1,6 @@
+---
+title: "Proposal"
+author: "Christian Pascual"
+date: "11/5/2018"
+output: github_document
+---
