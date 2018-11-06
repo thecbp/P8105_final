@@ -1,0 +1,30 @@
+---
+title: "Test-clean"
+author: "Christian Pascual"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+data = read_csv("./procedure10.csv")
+```
+
+The original data set has `r nrow(data)` rows and `r ncol(data)` columns. Many of the columns are all NA or all blank. 
+
+```{r}
+is_all_NA = function(col) {
+  is_not_NAs = !is.na(col)
+  return(sum(is_not_NAs) == 0)
+}
+ 
+test = tibble(
+  data = map(data, is_all_NA)
+) 
+test = test %>% 
+  mutate(all_NA = ifelse(data == TRUE, "Yes", "No")) %>% 
+  group_by(all_NA) %>% 
+  summarize(n = n())
+knitr::kable(test)
+
+```
+
