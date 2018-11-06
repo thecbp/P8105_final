@@ -1,6 +1,24 @@
 ---
-title: "Proposal"
-author: "Christian Pascual"
+title: "Project Proposal"
 date: "11/5/2018"
 output: github_document
 ---
+
+# Group Members:
+
+* Justin Hsie (UNI: jih2119)
+* Xiao Shi (UNI: xs2330)
+* Tiffany Tu (UNI: tt2714)
+* Christian Pascual (UNI: cbp2128)
+
+# Project Title
+
+# Motivation
+
+# Intended final products
+
+# Anticipated data sources
+
+# Planned analyses, visualizations, coding
+
+# Planned timeline
