@@ -18,7 +18,7 @@ Before we start our analyses, it's important for us to understand our data in it
 
 ## Libraries and settings
 
-```{r lib-imports }
+```{r lib-imports, message = FALSE }
 # Our data analysis toolkit
 library(tidyverse)
 
@@ -47,7 +47,19 @@ That being said, many of the columns are useless for regression analysis. Many c
 
 # Data Cleaning
 
+To start the cleaning, we want to remove all columns that contain more than 50% missing values (either blank cells or `NA`). Furthermore, some of the columns actually contain duplicate information from others. These duplicate columns start with `flg` or `e`. 
 
+```{r column-filtering }
+tidy_colectomies = colectomies %>% 
+  select(-contains("flg_"), -contains("e_")) %>%
+  select_if(colSums(is.na(.)) < nrow(.) * 0.5)
+```
+
+After the removal of duplicate columns and columns with more than 50% missing data, `tidy_colectomies` comes to be `r nrow(tidy_colectomies)` rows and `r ncol(tidy_colectomies)` columns. 
+
+```{r}
+
+```
 
 
 
