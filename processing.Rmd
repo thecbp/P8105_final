@@ -25,6 +25,18 @@ test = test %>%
   group_by(all_NA) %>% 
   summarize(n = n())
 knitr::kable(test)
-
 ```
+
+Removing duplicate columns containing "flg_" and "e_", and >50% missing value. 
+```{r}
+new_data = data %>% 
+  select(-contains("flg_"), -contains("e_")) %>%
+  select_if(colSums(is.na(.)) < nrow(.) * 0.5)
+```
+
+
+
+
+
+
 

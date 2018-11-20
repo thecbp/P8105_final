@@ -6,14 +6,14 @@ Christian Pascual
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ───────────────────────────────────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 3.0.0     ✔ purrr   0.2.5
-    ## ✔ tibble  1.4.2     ✔ dplyr   0.7.6
+    ## ✔ tibble  1.4.2     ✔ dplyr   0.7.7
     ## ✔ tidyr   0.8.1     ✔ stringr 1.3.1
     ## ✔ readr   1.1.1     ✔ forcats 0.3.0
 
-    ## ── Conflicts ───────── tidyverse_conflicts() ──
+    ## ── Conflicts ──────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -57,7 +57,8 @@ data = read_csv("./procedure10.csv")
     ## Warning: 5 parsing failures.
     ## row # A tibble: 5 x 5 col     row col                 expected              actual file              expected   <int> <chr>               <chr>                 <chr>  <chr>             actual 1  1554 bloodglucose        no trailing characte… .3     './procedure10.c… file 2  1554 val_bloodglucose    no trailing characte… .3     './procedure10.c… row 3  2874 concurrentprocscpt… an integer            S2900  './procedure10.c… col 4  3082 concurrentprocscpt… an integer            S2900  './procedure10.c… expected 5  3083 concurrentprocscpt… an integer            S2900  './procedure10.c…
 
-The original data set has 3084 rows and 993 columns. Many of the columns are all NA or all blank.
+The original data set has 3084 rows and 993 columns. Many of the columns
+are all NA or all blank.
 
 ``` r
 is_all_NA = function(col) {
@@ -75,7 +76,16 @@ test = test %>%
 knitr::kable(test)
 ```
 
-| all\_NA |    n|
-|:--------|----:|
-| No      |  491|
-| Yes     |  502|
+| all\_NA |   n |
+| :------ | --: |
+| No      | 491 |
+| Yes     | 502 |
+
+Removing duplicate columns containing “flg\_” and “e\_”, and \>50%
+missing value.
+
+``` r
+new_data = data %>% 
+  select(-contains("flg_"), -contains("e_")) %>%
+  select_if(colSums(is.na(.)) < nrow(.) * 0.5)
+```
