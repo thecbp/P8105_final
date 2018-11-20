@@ -1,6 +1,5 @@
 ---
 title: "Test-clean"
-author: "Christian Pascual"
 output: github_document
 ---
 
