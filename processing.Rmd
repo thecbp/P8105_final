@@ -34,9 +34,3 @@ new_data = data %>%
   select_if(colSums(is.na(.)) < nrow(.) * 0.5)
 ```
 
-
-
-
-
-
-
