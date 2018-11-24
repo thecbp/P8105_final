@@ -45,10 +45,10 @@ Our data comes from a course from the University of Michigan Department of Stati
 
 Deliverable | Ideal Deadline | Hard Deadline
 -----|-----|-----
-Project proposal | November 7 | November 8
-Project review meeting | N/A | November 12 - 16
-Storyboarding website | Post-Review Meeting | November 12 - 16
-Finalize analyses to-do | Post-Review Meeting | November 12 - 16
+DONE: Project proposal | November 7 | November 8
+DONE: Project review meeting | N/A | November 12 - 16
+DONE: Storyboarding website | Post-Review Meeting | November 12 - 16
+DONE: Finalize analyses to-do | Post-Review Meeting | November 12 - 16
 Report sub-analyses | November 23 | December 6
 Report visualizations | November 23 | December 6
 Report writing | November 23 | December 6

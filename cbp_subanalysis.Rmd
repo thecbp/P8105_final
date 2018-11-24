@@ -1,0 +1,29 @@
+---
+title: "cbp_subanalysis"
+author: "Christian Pascual"
+date: "11/23/2018"
+output: github_document
+---
+
+```{r lib-imports, message = FALSE }
+# Our data analysis toolkit
+library(tidyverse)
+
+# Formatting plot output
+knitr::opts_chunk$set(
+  out.width = "90%"
+)
+
+# Set the plot design
+theme_set(theme_classic() + 
+            theme(legend.position = "bottom", 
+                  plot.title = element_text(hjust = 0.5)))
+
+colectomies = read.csv(file = './procedure10.csv') 
+
+tidy_colectomies = colectomies %>% 
+  select(-contains("flg_"), -contains("e_")) %>%
+  select_if(colSums(is.na(.)) < nrow(.) * 0.5)
+```
+
+# How are successes associated with ASA level?

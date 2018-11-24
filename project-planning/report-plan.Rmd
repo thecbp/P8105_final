@@ -32,7 +32,7 @@ output: github_document
   * how many of their surgeries result in SSI?
 * how are successes distributed by patients with different diseases
 * how are successes distributed by insurance status?
-* how are successes associated with ASA level?
+* how are successes associated with ASA level? - Christian 
 * does the number of surgeries & successes change with time?
 
 ## Modeling
