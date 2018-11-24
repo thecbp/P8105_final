@@ -1,11 +1,9 @@
----
-title: "cbp_subanalysis"
-author: "Christian Pascual"
-date: "11/23/2018"
-output: github_document
----
+cbp\_subanalysis
+================
+Christian Pascual
+11/23/2018
 
-```{r lib-imports, message = FALSE }
+``` r
 # Our data analysis toolkit
 library(tidyverse)
 
@@ -26,16 +24,17 @@ tidy_colectomies = colectomies %>%
   select_if(colSums(is.na(.)) < nrow(.) * 0.5)
 ```
 
-# How are successes associated with ASA level?
+How are successes associated with ASA level?
+============================================
 
 Important information
 
-* Covariate: asa_class_id
-* Outcome: postop_ssi_super	
-* Outcome: postop_ssi_deep	
-* Outcome: postop_ssi_organspace
+-   Covariate: asa\_class\_id
+-   Outcome: postop\_ssi\_super
+-   Outcome: postop\_ssi\_deep
+-   Outcome: postop\_ssi\_organspace
 
-```{r asa-vs-ssi }
+``` r
 asa_analysis = tidy_colectomies %>% 
   select(asa_class_id, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace) %>% 
   mutate(any_ssi = postop_ssi_super + postop_ssi_deep + postop_ssi_organspace,
@@ -55,23 +54,35 @@ asa_analysis = tidy_colectomies %>%
 knitr::kable(asa_analysis)
 ```
 
+| ASA |     n|  n\_SSIs|  percent\_SSIs|
+|:----|-----:|--------:|--------------:|
+| 1   |    38|        0|      0.0000000|
+| 2   |  1454|        9|      0.0061898|
+| 3   |  1544|       13|      0.0084197|
+| 4   |    47|        1|      0.0212766|
+| 5   |     1|        0|      0.0000000|
+
 Now plotting out this analysis:
 
-```{r}
+``` r
 ggplot(data = asa_analysis, aes(x = ASA, y = n, fill = ASA)) +
   geom_bar(stat = "identity")
 ```
 
-The majority of colectomy surgeries are classified as 2 or 3. 
+<img src="cbp_subanalysis_files/figure-markdown_github/unnamed-chunk-1-1.png" width="90%" />
 
-```{r}
+The majority of colectomy surgeries are classified as 2 or 3.
+
+``` r
 ggplot(data = asa_analysis, aes(x = ASA, y = percent_SSIs, fill = ASA)) +
   geom_bar(stat = "identity")
 ```
 
-However, we see that there is also an increasing trend in surgical site infections as the ASA severity gets higher. 
+<img src="cbp_subanalysis_files/figure-markdown_github/unnamed-chunk-2-1.png" width="90%" />
 
-```{r distribution-of-ssi-type }
+However, we see that there is also an increasing trend in surgical site infections as the ASA severity gets higher.
+
+``` r
 asa_analysis2 = tidy_colectomies %>% 
   select(asa_class_id, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace) %>% 
   mutate(any_ssi = postop_ssi_super + postop_ssi_deep + postop_ssi_organspace,
@@ -89,4 +100,6 @@ ggplot(data = asa_analysis2, aes(x = ASA, fill = ssi_type)) +
   geom_bar()
 ```
 
-Just looking at the instances of SSI, we see that there's not really a discernable pattern in how the types of SSI are distributed by ASA type. 
+<img src="cbp_subanalysis_files/figure-markdown_github/distribution-of-ssi-type-1.png" width="90%" />
+
+Just looking at the instances of SSI, we see that there's not really a discernable pattern in how the types of SSI are distributed by ASA type.
