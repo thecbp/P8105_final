@@ -63,12 +63,14 @@ tidy_colectomies = colectomies %>%
 
 After the removal of duplicate columns and columns with more than 50% missing data, `tidy_colectomies` comes to be `r nrow(tidy_colectomies)` rows and `r ncol(tidy_colectomies)` columns. 
 
-Many of the columns have uninuitive or non-descriptive names, so change these up to reflect the information they convey. There are too many columns to rename inline, so we created a function to in `utils.R` to do it compactly in this report. 
+Many of the columns have uninuitive or non-descriptive names, so change these up to reflect the information they convey. There are too many columns to rename inline, so we created a function `prettyify_names` in `utils.R` to do it compactly in this report. 
 
 ```{r mass-renaming }
 source("./utils.R")
 tidy_colectomies = prettify_names(tidy_colectomies)
 ```
+
+
 
 
 # For checking current dataset in Excel (not include in report)
