@@ -1,0 +1,21 @@
+---
+title: "tiff_subanalysis"
+author: "Tiffany Tu"
+date: "11/25/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## How are successes distributed by patients with different diseases?
+
+* Success can be measured by Surgical Site Infection (SSI) levels.      
+* Types of prior diseases: cancer, diabetes, cardiac arrhythmia, cardio-pulmonary complication, pneumonia, acute renal insufficiency, stroke/CVA, 
+
+```{r}
+
+```
+
