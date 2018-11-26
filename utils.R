@@ -2,7 +2,6 @@ prettify_names = function(df) {
   # Rename columns specific to colectomy data
   new_df = df %>% 
     rename(
-      n = X,
       surgeon_id	= surgeon_cid_160801, 
       death_status = death,
       surg_priority_status = surgical_priority,
