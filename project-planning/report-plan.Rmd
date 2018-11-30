@@ -31,7 +31,7 @@ output: github_document
 * how many different hospitals are represented in the data?
   * how many of their surgeries result in SSI?
 * how are successes distributed by patients with different diseases - Tiffany
-* how are successes distributed by insurance status?
+* how are successes distributed by insurance status? - Justin
 * how are successes associated with ASA level? - Christian 
 * does the number of surgeries & successes change with time?
 
