@@ -25,7 +25,7 @@ insurance = read_csv("./procedure10.csv") %>%
 data = read_csv("./procedure10.csv") %>% 
   select(-contains("flg_"), -contains("e_")) %>%
   select_if(colSums(is.na(.)) < nrow(.) * 0.5)
-colectomy = select(colectomy, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace)
+colectomy = select(data, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace)
 ```
 
 
