@@ -19,8 +19,10 @@ library(tidyverse)
 Removing duplicate columns containing "flg\_" and "e\_", and &gt;50% missing value.
 
 ``` r
-colectomy = read_csv("./procedure10.csv") %>% 
+insurance = read_csv("./procedure10.csv") %>% 
+  select(insurance_payment_type)
+data = read_csv("./procedure10.csv") %>% 
   select(-contains("flg_"), -contains("e_")) %>%
-  select_if(colSums(is.na(.)) < nrow(.) * 0.5) %>% 
-  select(postop_ssi_super, postop_ssi_deep, postop_ssi_organspace)
+  select_if(colSums(is.na(.)) < nrow(.) * 0.5)
+colectomy = select(data, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace)
 ```

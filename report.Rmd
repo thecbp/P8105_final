@@ -57,7 +57,7 @@ is_mostly_intact = function(col) {
 }
 
 tidy_colectomies = colectomies %>% 
-  select(-contains("flg_"), -contains("e_")) %>% 
+  select(-starts_with("flg_"), -starts_with("e_")) %>% 
   select_if(unlist(map(., is_mostly_intact), use.names = FALSE))
 ```
 
