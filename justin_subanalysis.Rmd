@@ -44,7 +44,8 @@ insurance_df =
   mutate(all_ssi = 
            postop_ssi_super + postop_ssi_deep + postop_ssi_organspace, 
          ssi = ifelse(all_ssi != 0, 1, 0),
-         insurance_payment_type = as.factor(insurance_payment_type))
+         insurance_payment_type = as.factor(insurance_payment_type)) %>% 
+  drop_na()
 ```
 
 ```{r insurance_plot, warning = FALSE}
