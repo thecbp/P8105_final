@@ -27,6 +27,11 @@ diabetes. All variables are converted to binary for this analysis and NA
 entries are set to 0, indicating that the patient does not have this
 condition.
 
+### Understanding our dataset
+
+We’ll take a look at the number of cases for each health condition
+available in our dataset as well as the number of death and SSI levels.
+
 ``` r
 dist_healthdisease = healthdisease %>% 
   select(-postop_ssi_super, -postop_ssi_deep, -postop_ssi_organspace, 
@@ -48,3 +53,30 @@ ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) +
 ```
 
 ![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+``` r
+deathsum = healthdisease %>% group_by(death) %>% summarize(n = n()) %>% 
+  mutate(death = c("Died intraop", "Died within 30 days postop", 
+                   "No death", "NA"),
+         death = factor(death, levels = c("Died intraop", 
+                                          "Died within 30 days postop", "No death", "NA")))
+  
+deathplot = ggplot(deathsum, aes(x = death, y = n, fill = death)) + geom_bar(stat = "identity") +
+  theme(legend.position = "none") + labs(y = "") 
+```
+
+``` r
+SSIsum = healthdisease %>% group_by(any_ssi) %>% summarize(n = n()) %>% 
+  mutate(any_ssi = as.factor(any_ssi))
+
+SSIplot = ggplot(SSIsum, aes(x = any_ssi, y = n, fill = any_ssi)) + geom_bar(stat = "identity") + 
+  theme(legend.position = "none") + labs(y = "") 
+```
+
+``` r
+grid.arrange(deathplot, SSIplot, top = "Death and SSI distribution", left = "n")
+```
+
+![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+Number of prior conditions associated with surgical approach
