@@ -1,3 +1,11 @@
+# Used for filtering for unneeded columns
+is_mostly_intact = function(col) {
+  # Account for literal NAs and blanks
+  missings = is.na(col) | col == "" | col == "NA"
+  return(sum(missings) <= (3084 / 2))
+}
+
+# Used for making column names more readable
 prettify_names = function(df) {
   # Rename columns specific to colectomy data
   new_df = df %>% 
