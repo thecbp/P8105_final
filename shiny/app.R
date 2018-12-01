@@ -101,11 +101,16 @@ server <- function(input, output) {
     )
   })
   
+  # Create a model from the formula
+  log.model = reactive({
+    glm(fmla(), data = colectomies, family = binomial())
+  })
+  
+  
   # Act upon a user pressing the Regress button
   observeEvent(input$submit, {
-    
-    model = glm(fmla(), data = colectomies, family = binomial())
-    model.df = broom::tidy(model)
+  
+    model.df = broom::tidy(log.model())
     
     output$coeffsGraph = renderDataTable({
       model.df
