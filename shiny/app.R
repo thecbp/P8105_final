@@ -11,7 +11,6 @@ colectomies = read.csv(file = '../procedure10.csv') %>%
   select_if(unlist(map(., is_mostly_intact), use.names = FALSE)) %>% 
   prettify_names(.)
 
-# Define UI for application that draws a histogram
 ui <- fluidPage(
    
    titlePanel("Model Making"),
@@ -24,8 +23,8 @@ ui <- fluidPage(
        # Covariates for patient information states
        pickerInput(
          inputId = "patientStates", 
-         label = "Possible patient states", 
-         choices = c("Uninsured", "Asian", "Latino"), 
+         label = "Possible patient variables", 
+         choices = patient_states_util, 
          options = list(
            `actions-box` = TRUE, 
            size = 12,
@@ -37,27 +36,65 @@ ui <- fluidPage(
        # Covariates for disease states
        pickerInput(
          inputId = "diseaseStates", 
-         label = "Possible disease states", 
-         choices = colnames(colectomies), 
+         label = "Possible disease variables", 
+         choices = disease_states_util, 
          options = list(
            `actions-box` = TRUE, 
            size = 10,
            `selected-text-format` = "count > 3"
          ), 
          multiple = TRUE
-       )
+       ),
+       
+       # Covariates for surgery states
+       pickerInput(
+         inputId = "surgStates", 
+         label = "Possible surgery variables", 
+         choices = surgery_states_util, 
+         options = list(
+           `actions-box` = TRUE, 
+           size = 10,
+           `selected-text-format` = "count > 3"
+         ), 
+         multiple = TRUE
+       ),
+       
+       # Covariates for laboratory states
+       pickerInput(
+         inputId = "labStates", 
+         label = "Possible disease  variables", 
+         choices = lab_states_util, 
+         options = list(
+           `actions-box` = TRUE, 
+           size = 10,
+           `selected-text-format` = "count > 3"
+         ), 
+         multiple = TRUE
+       ),
+       
+       # Button to proceed with regression
+       actionBttn("regress", "Regress!")
+       
      ),
      
      mainPanel(
-       textOutput("allCovariates")
+       fluidRow(
+         textOutput("allCovariates")
+       ),
+       fluidRow(
+         "poop"
+       )
      )
   )
 ) 
 
-# Define server logic required to draw a histogram
 server <- function(input, output) {
   output$allCovariates = renderText({
-    c(input$diseaseStates, input$patientStates)
+    c(input$patientStates,
+      input$surgStates,
+      input$labStates,
+      input$diseaseStates
+      )
   })
 }
 
