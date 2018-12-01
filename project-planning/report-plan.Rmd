@@ -12,7 +12,7 @@ output: github_document
 
 ## Data Characterization
 
-* how many rows and columns originally
+* ~~how many rows and columns originally~~
 * what are some key variables in the dataset?
   * hospital data, patient data, laboratory data, disease data
   * key outcome: SSI, surgical site infection
@@ -20,29 +20,47 @@ output: github_document
 
 ## Data Cleaning
 
-* remove columns with >50% missing values
-* remove duplicated columns
-* defining variables to keep from literature review
-* renaming columns to be more informative
+* ~~remove columns with >50% missing values~~
+* ~~remove duplicated columns~~
+* ~~defining variables to keep from literature review~~
+* ~~renaming columns to be more informative~~
 * recoding columns (0/1 to logical, categories to factors)
 
 ## Subanalyses
 
 * how many different hospitals are represented in the data?
   * how many of their surgeries result in SSI?
-* how are successes distributed by patients with different diseases - Tiffany
-* how are successes distributed by insurance status? - Justin
-* how are successes associated with ASA level? - Christian 
+* ~~how are successes distributed by patients with different diseases~~ - Tiffany
+* ~~how are successes distributed by insurance status?~~ - Justin
+* ~~how are successes associated with ASA level?~~ - Christian
 * does the number of surgeries & successes change with time?
+* paragraph on final set of variables chosen to keep in modelling, based on subanalyses and literature review
 
-## Modeling
+## Modeling - Christian
 
 * make model based on variables of interest from subanalyses
-* cross-validation 
-* comparison to some other model from literture
+* cross-validation & bootstrapping
+* predictive ability
+* paragraph on significant params, insignificant params
+* limitations of model
 
-## Conclusion
+## Conclusion - Christian
 
+* Final model
 * What factors are associated with SSI?
   * positively? negatively?
 * What factors ended up being non-significant?
+
+## Site skeleton - 
+
+* index.html
+* report.html
+* shiny.html
+* link to repo
+
+## Screencast - Justin
+
+* Review of site:
+  * about page (intro to project) (~0:30)
+  * final analyses (what did we do to create a model) (~1:00)
+  * using the shiny (demo the shiny app) (~0:30)

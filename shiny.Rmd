@@ -34,7 +34,8 @@ Think you can create a model that can predict a colectomy's success? Pick some p
 disease_states = c("diabetes", "dvt", "asthma")
 patient_states = c("Uninsured", "Asian", "Latino")
 
-submitButton(text = "Regress!")
+# Delay all updates to charts until user is ready
+# submitButton(text = "Regress!")
 
 # Covariates for patient information states
 pickerInput(
@@ -67,26 +68,30 @@ pickerInput(
 Row {data-width=650}
 -----------------------------------------------------------------------
 
-### Chart A
+### Model Information
 
 ```{r}
-tabsetPanel(
-    tabPanel("Covariate Coefficients",verbatimTextOutput("summary")),
-    tabPanel("Covariate Significance", verbatimTextOutput("summary"))
-  )
+renderPrint({
+  input[[diseaseStates]]
+})
 ```
 
 Row {data-width=350}
 -----------------------------------------------------------------------
 
-### Chart B
+### Confidence Intervals
 
 ```{r}
-
+tabsetPanel(
+    tabPanel("Confidence Interval",verbatimTextOutput("summary")),
+    tabPanel("Covariate Significance", verbatimTextOutput("summary"))
+  )
 ```
 
-### Chart C
+### Predictive Value
 
 ```{r}
-
+renderText({
+  textOutput("patient_states")
+})
 ```
