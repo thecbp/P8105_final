@@ -31,13 +31,33 @@ is_mostly_intact = function(col) {
 
 tidy_colectomies = colectomies %>% 
   select(-starts_with("flg_"), -starts_with("e_")) %>% 
-  select_if(unlist(map(., is_mostly_intact), use.names = FALSE))
+  select_if(unlist(map(., is_mostly_intact), use.names = FALSE)) %>% 
+  prettify_names(.) %>% 
+  mutate(any_ssi =  (postop_ssi_super + postop_ssi_deep + 	postop_ssi_organspace) > 1)
 ```
 
-
-```{r, warning = FALSE, message = FALSE}
-insurance_df = select(tidy_colectomies, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace, insurance_payment_type)
+```{r insurance_analysis, warning = FALSE, message = FALSE}
+insurance_df = 
+  select(tidy_colectomies, any_ssi, postop_ssi_super,
+                      postop_ssi_deep, postop_ssi_organspace,
+                      insurance_payment_type) %>% 
+  mutate(all_ssi = 
+           postop_ssi_super + postop_ssi_deep + postop_ssi_organspace, 
+         ssi = ifelse(all_ssi != 0, 1, 0),
+         insurance_payment_type = as.factor(insurance_payment_type))
 ```
 
-
+```{r insurance_plot, warning = FALSE}
+ggplot(data = insurance_df,
+                        aes(x = insurance_payment_type,
+                            y = ssi,
+                            fill = insurance_payment_type)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(
+    x = "Insurance Payment Type",
+    y = "SSI",
+    title = "Insurance Types and SSI"
+  )
+```
 
