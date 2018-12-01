@@ -29,8 +29,7 @@ prettify_names = function(df) {
       is_on_dialysis = dialysis,
       had_dis_cancer = disseminated_cancer,
       had_dvt = dvt,
-      had_etoh = etoh,	
-      had_family_dvt = family_dvt,
+      had_etoh = etoh,
       height_unit	= height_unit, #CHECK
       had_hypertension = hypertension,
       had_open_wound = open_wound,
@@ -58,8 +57,7 @@ prettify_names = function(df) {
       height = val_height,
       weight = val_weight, 
       bmi = val_bmi,
-      length_of_stay = val_los,
-      intraop_temp_celsius = intraop_temp_c,	
+      length_of_stay = val_los,	
       operation = op_year
     )
     
