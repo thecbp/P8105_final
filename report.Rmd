@@ -21,6 +21,7 @@ Before we start our analyses, it's important for us to understand our data in it
 ```{r lib-imports, message = FALSE }
 # Our data analysis toolkit
 library(tidyverse)
+source("./utils.R")
 
 # Formatting plot output
 knitr::opts_chunk$set(
@@ -58,18 +59,13 @@ is_mostly_intact = function(col) {
 
 tidy_colectomies = colectomies %>% 
   select(-starts_with("flg_"), -starts_with("e_")) %>% 
-  select_if(unlist(map(., is_mostly_intact), use.names = FALSE))
+  select_if(unlist(map(., is_mostly_intact), use.names = FALSE)) %>% 
+  prettify_names(.)
 ```
 
 After the removal of duplicate columns and columns with more than 50% missing data, `tidy_colectomies` comes to be `r nrow(tidy_colectomies)` rows and `r ncol(tidy_colectomies)` columns. 
 
 Many of the columns have uninuitive or non-descriptive names, so change these up to reflect the information they convey. There are too many columns to rename inline, so we created a function `prettyify_names` in `utils.R` to do it compactly in this report. 
-
-```{r mass-renaming }
-source("./utils.R")
-tidy_colectomies = prettify_names(tidy_colectomies)
-```
-
 
 
 
@@ -77,7 +73,7 @@ tidy_colectomies = prettify_names(tidy_colectomies)
 
 ```{r}
 # Sanity check the current
-# write.csv(tidy_colectomies, file = "./test.csv")
+write.csv(tidy_colectomies, file = "./test.csv")
 ```
 
 

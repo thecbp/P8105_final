@@ -63,3 +63,67 @@ prettify_names = function(df) {
     
   return(new_df)
 }
+
+# The _states variables are for use in the Shiny application
+patient_states_util = c(
+  "Age" = "age",
+  "BMI" = "bmi",
+  "Functional Status" = "functional_status",
+  "Height (in)" = "height_in",
+  "Length of Stay" = "length_of_stay",
+  "On Ventilator" = "is_on_ventilator",
+  "On Beta Blockers" = "is_on_beta_blockers",
+  "On LMWH" = "lmwh",
+  "On Nerve Blockers" = "nerve_blockers",
+  "On Anticoagulants" = "on_anticoag",
+  "Race" = "race",
+  "Severity" = "asa_class_id",
+  "Sex" = "sex",
+  "Smoker" = "is_smoker",
+  "Still In Hospital" = "still_in_hospital",
+  "Weight (lb)" = "weight_lb"
+)
+
+disease_states_util = c(
+  "Ascites" = "had_ascites",
+  "Bleeding Disorder" = "had_bleeding_disorder",
+  "CHF" = "had_chf",
+  "Chronic Condition" = "chronic_cond",
+  "COPD" = "copd",
+  "Coronary Artery Problem" = "c_artery_prob",
+  "Diabetes" = "diabetes",
+  "DVT" = "dvt",
+  "ETOH" = "etoh",
+  "Family DVT" = "family_dvt",
+  "Hypertension" = "hypertension",
+  "Open Wound" = "open_wound",
+  "PVD" = "pvd",
+  "Pneumonia" = "pneumonia",
+  "Sleep Apnea" = "sleep_apnea",
+  "SCD" = "scd"
+)
+
+surgery_states_util = c(
+  "Drain Presence" = "presence_drains",
+  "Had Cathether" = "had_catheter",
+  "Had Epidural" = "had_epidural",
+  "Placed in ICU Postop" = "admit_to_icu_postsurg",
+  "Preop Sepsis" = "preop_sepsis",
+  "Preop Transfusion" = "preop_transfusion",
+  "Surgery Year" = "operation",
+  "Surgical Approach" = "surgical_approach",
+  "Surgery Priority" = "surg_priority_status"
+)
+
+lab_states_util = c(
+  "Albumin" = "albumin",
+  "Bilrubin" = "bilrubin",
+  "Blood Glucose" = "bloodglucose",
+  "Creatinine" = "creatinine",
+  "Hematocrit" = "hct",
+  "Hemoglobin" = "hemoglobin",
+  "INR" = "inr",
+  "Lactate" = "lactate",
+  "Plate Count" = "platecount",
+  "WBC" = "wbc"
+)
