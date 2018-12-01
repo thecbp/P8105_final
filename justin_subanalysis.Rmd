@@ -13,24 +13,31 @@ Measure success with SSI. Variables are postop_ssi_super, postop_ssi_deep, and p
 
 ```{r, message = FALSE}
 library(tidyverse)
+library(haven)
 ```
 
 ####Clean data
 
-Removing duplicate columns containing "flg_" and "e_", and >50% missing value. 
+```{r data-import }
+colectomies = read_dta("colectomy_raw_new.dta")
+```
+
+```{r data-reduction }
+is_mostly_intact = function(col) {
+  # Account for literal NAs and blanks
+  missings = is.na(col) | col == "" | col == "NA"
+  return(sum(missings) <= (3084 / 2))
+}
+
+tidy_colectomies = colectomies %>% 
+  select(-starts_with("flg_"), -starts_with("e_")) %>% 
+  select_if(unlist(map(., is_mostly_intact), use.names = FALSE))
+```
+
 
 ```{r, warning = FALSE, message = FALSE}
-insurance = read_csv("./procedure10.csv") %>% 
-  select(insurance_payment_type)
-
-data = read_csv("./procedure10.csv") %>% 
-  select(-starts_with("flg_"), -starts_with("e_")) %>%
-  select_if(colSums(is.na(.)) < nrow(.) * 0.5)
-
-colectomy = select(data, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace)
+insurance_df = select(tidy_colectomies, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace, insurance_payment_type)
 ```
 
-```{r}
-test = data %>% 
-  select(insurance_payment_type)
-```
+
+

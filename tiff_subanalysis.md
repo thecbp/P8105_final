@@ -9,11 +9,18 @@ Tiffany Tu
       - postop\_ssi\_super  
       - postop\_ssi\_deep
       - postop\_ssi\_organspace
-  - Pre-operative health conditions acronyms
+  - Pre-operative health condition descriptions
+      - Smoker: Tobacco use within 1 year
+      - Etoh: \>2 drinks/day two weeks prior to surgery
+      - Body Weight Loss: 10% of body weight loss 6 months prior to
+        surgery
+      - Chf: Congestive Heart Failure within 30 days prior to surgery
       - Scd : Specific Carbohydrate Diet
-      - Etoh: Alcohol use
       - Copd: Chronic Obstructive Pulmonary Disease
       - Dvt: Deep Vein Thrombosis
+      - Chronic Condition: steriods, immunosuppresive meds
+      - Preop-transfusion: RBCs within 72 hours of surgery
+      - Ventilator: ventilator dependent
 
 There are three levels of severity for variables sleep apnea and
 diabetes. All variables are converted to binary for this analysis and NA
@@ -35,7 +42,9 @@ dist_healthdisease = healthdisease %>%
   mutate(cases = rowSums(.[2:10868])) %>% 
   transform(condition = reorder(condition, -cases))
 
-ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) + geom_bar(stat = "identity") + ggtitle("Pre-operative health conditions") + theme(axis.text.x = element_text(angle = 40, hjust = 1), legend.position = "none")
+ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) +
+  geom_bar(stat = "identity") + ggtitle("Pre-operative health conditions") +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1), legend.position = "none")
 ```
 
 ![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
