@@ -24,14 +24,15 @@ condition.
 dist_healthdisease = healthdisease %>% 
   select(-postop_ssi_super, -postop_ssi_deep, -postop_ssi_organspace, 
          -any_ssi, -death, -surgical_approach) %>% 
-  mutate(preop_sepsis = ifelse(preop_sepsis == 1, 0, 1), 
+  mutate(ascites = ifelse(ascites == 2, 1, 0),
+         preop_sepsis = ifelse(preop_sepsis == 1, 0, 1), 
          sleep_apnea = ifelse(sleep_apnea == 0, 0, 1)) %>%
   replace_na(list(dvt = 0, disseminated_cancer = 0, beta_blocker = 0, scd = 0,
-                  heparinbid = 0, heparintid = 0, indwelling_catheter = 0)) %>% 
+                  heparinbid = 0, heparintid = 0)) %>% 
   rownames_to_column %>% 
   gather(condition, value, -rowname) %>% 
   spread(rowname, value) %>% 
-  mutate(cases = rowSums(.[2:3085])) %>% 
+  mutate(cases = rowSums(.[2:10868])) %>% 
   transform(condition = reorder(condition, -cases))
 
 ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) + geom_bar(stat = "identity") + ggtitle("Pre-operative health conditions") + theme(axis.text.x = element_text(angle = 40, hjust = 1), legend.position = "none")
