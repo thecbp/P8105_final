@@ -1,4 +1,5 @@
 library(shiny)
+library(broom)
 library(flexdashboard)
 library(tidyverse)
 library(plotly)
@@ -17,8 +18,7 @@ ui <- fluidPage(
    
    sidebarLayout(
      sidebarPanel(
-       # Delay all updates to charts until user is ready
-       # submitButton(text = "Regress!")
+       helpText("Create a model to predict colectomy success!"),
        
        # Covariates for patient information states
        pickerInput(
@@ -30,7 +30,8 @@ ui <- fluidPage(
            size = 12,
            `selected-text-format` = "count > 3"
          ), 
-         multiple = TRUE
+         multiple = TRUE,
+         selected = "Age"
        ),
        
        # Covariates for disease states
@@ -73,28 +74,46 @@ ui <- fluidPage(
        ),
        
        # Button to proceed with regression
-       actionBttn("regress", "Regress!")
+       actionBttn("submit", "Regress!")
        
      ),
      
      mainPanel(
        fluidRow(
-         textOutput("allCovariates")
+         dataTableOutput("coeffsGraph")
        ),
        fluidRow(
-         "poop"
+         textOutput("allCovariates")
        )
      )
   )
 ) 
 
 server <- function(input, output) {
-  output$allCovariates = renderText({
-    c(input$patientStates,
-      input$surgStates,
-      input$labStates,
-      input$diseaseStates
-      )
+
+  # Create a formula to place in the 
+  fmla = reactive({
+    as.formula(
+      paste("postop_ssi_super ~ ", paste(c(input$patientStates,
+                                           input$surgStates,
+                                           input$labStates,
+                                           input$diseaseStates), collapse = "+"))
+    )
+  })
+  
+  # Act upon a user pressing the Regress button
+  observeEvent(input$submit, {
+    
+    model = glm(fmla(), data = colectomies, family = binomial())
+    model.df = broom::tidy(model)
+    
+    output$coeffsGraph = renderDataTable({
+      model.df
+    })
+  })
+  
+  output$allCovariates = renderPrint({
+    fmla()
   })
 }
 
