@@ -77,6 +77,134 @@ for(i in 1:ncol(dt)){
   }
 }
 table(colectomy.var) #554 variables removed.
+#colnames(dt)[!colectomy.var] #Name of variables removed.
+dt=dt[,colectomy.var]
+
+temp=is.element(colnames(dt),c('letter_flag','deletedby','deletereason'))
+dt=dt[,!temp]#Empty Columns.
+
+temp1=which(colnames(dt)==c('exp_timely_antibx'))
+temp2=which(colnames(dt)==c('exp_timely_antibx_colect'))
+temp1=which(colnames(dt)==c('otherprocscpt_1'))
+
+
+temp2=which(colnames(dt)==c('concurrentprocscpt_9'))
+dt=dt[,-c(temp1:temp2)]#Mostly Empty Columns
+
+temp=is.element(colnames(dt),c('preop_metastatic_cancer_liver',
+'preop_metastatic_cancer_lungs',
+'preop_metastatic_cancer_pelvis','preop_metastatic_cancer_other',
+'preop_metastatic_cancer_undoc2','preop_cea_date_unknown'))
+dt=dt[,!temp] #Empty Columns
+
+temp=which(colnames(dt)==c('id','casenum'))
+dt=dt[,-temp]#Irrelevant Info.
+
+temp=which(colnames(dt)==c('cpt_description'))
+dt=dt[,-temp]#Irrelevant Info.
+
+
+#Info From FMT_2
+temp1=which(colnames(dt)==c('flg_dead'))
+temp2=which(colnames(dt)==c('flg_cmp_vte_combined'))
+dt_resp2=dt[,temp1:temp2]
+
+ind=logical(ncol(dt_resp2))
+for(i in 1:ncol(dt_resp2)){
+if(substr(colnames(dt_resp2)[i],1,7)=='flg_cmp'){
+ind[i]=TRUE;
+}
+}
+ind[which(colnames(dt_resp2)=='flg_dead')]=TRUE;
+ind[which(colnames(dt_resp2)=='flg_dead30')]=TRUE;
+ind[which(colnames(dt_resp2)=='flg_util_reop')]=TRUE;
+
+
+ind[which(colnames(dt_resp2) == 'flg_util_readm')] = TRUE;
+ind[which(colnames(dt_resp2) == 'flg_util_ed')] = TRUE;
+ind[which(colnames(dt_resp2) == 'flg_util_extended_los')] = TRUE;
+ind[which(colnames(dt_resp2) == 'e_discharge_disposition')] = TRUE;
+ind[which(colnames(dt_resp2) == 'flg_postop_temp_gt968')] = TRUE;
+dt_resp=dt_resp2[,ind]
+#Col 1-8: dead/readmit/reop etc., 9-48: flg_cmp
+
+#Constructing response vector. 1 for failure. 0 for success.
+resp=numeric(nrow(dt))
+for( i in 1:n){
+temp=(dt_resp[i,1]==1)||(dt_resp[i,8]==1)||(dt_resp[i,7]==1)||(dt_resp[i,
+6]==1)||(dt_resp[i,3]==11)
+if(is.na(temp)) temp=FALSE;
+if(temp){resp[i]=1}
+}
+for( i in 1:n ){
+if(any(dt_resp[i,9:48]==1)){
+  resp[i]=1;
+  }
+}
+table(resp) #3450 failures.
+
+#The number of failures over different surgical procedures:
+temp=which(is.element(dt$surgical_approach,c(1,4,6)))
+
+#These are the approchaes that are either open or later converted to open.
+sum(resp[temp])
+#There are 2701.
+2701/length(temp)
+#There are 38.9% of the failure rate, much higher than 10% overall..
+#ASA-adjusted:
+table(dt$asa_class_id[temp])
+mean(dt$asa_class_id[temp])
+
+#Laparoscopic:
+temp=which(is.element(dt$surgical_approach,c(2,3,4)))
+table(dt$asa_class_id[temp])
+mean(dt$asa_class_id[temp])
+sum(resp[temp])/length(temp)
+#There are 21.3% of the failure rate, much higher than 10% overall..
+
+#Examine the use of robotic approach:
+temp=which(is.element(dt$surgical_approach,c(5,6)))
+sum(resp[temp])
+sum(resp[temp])/length(temp)
+#ASA-adjusted:
+table(dt$asa_class_id[temp])
+mean(dt$asa_class_id[temp])
+
+# factorize diabetes
+for(i in 1:10868){
+  if((dt$diabetes[i] == 2)||(dt$diabetes[i] == 3)||(dt$diabetes[i] == 4)){
+    dt$diabetes[i] = 1
+  } else {
+    dt$diabetes[i] = 0
+  }
+}
+# factorize asa level
+for(i in 1:10868){
+  if((dt$asa_class_id[i] == 3)||(dt$asa_class_id[i] == 4)||(dt$asa_class_id[i] == 5)){
+    dt$asa_class_id[i] = 1
+  } else {
+    dt$asa_class_id[i] = 0
+  }
+}
+colectomy_model = cbind.data.frame(dt$flg_dead30, dt$surgical_approach, dt$surgical_priority, dt$hypertension, dt$e_diabetes, dt$e_surgical_wound_closure, dt$asa_class_id) %>%
+colnames(colectomy_model) = c("flg_dead30", "surgical_approach", "surgical_priority", "hypertension", "e_diabetes", "e_surgical_wound_closure", "asa_class_id")
+
+cor(colectomy_model)
+# all correlations are below 0.27
+## by mortality within 30 days
+for(i in 1:10868)
+  if(dt$cohort[i] == 1){
+    fit_mort30 <- glm(flg_dead30 ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure, data = colectomy_model)
+  }
+summary(fit_mort30)
+
+## by ssi
+for(i in 1:10868)
+  if(dt$cohort[i] == 1){
+    fit_ssi <- glm(flg_cmp_ssi_any ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure, data = dt)
+  }
+summary(fit_ssi)
+
 ```
 Reference
 1. Lisa Kaltenbach, How To Use Propensity Score Analysis (2008)
