@@ -3,7 +3,7 @@ tiff\_subanalysis
 Tiffany Tu
 11/25/2018
 
-## How are successes distributed by patients with different diseases and prior conditions?
+### How are successes distributed by patients with different diseases and prior conditions?
 
   - Success can be measured by Surgical Site Infection (SSI) levels
       - postop\_ssi\_super  
@@ -54,65 +54,25 @@ ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) +
 
 ![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-``` r
-#deathsum = healthdisease %>% group_by(death) %>% summarize(n = n()) %>% 
-#  mutate(death = c("Died intraop", "Died within 30 days postop", 
-#                   "No death", "NA"),
-#         death = factor(death, levels = c("Died intraop", 
-#                                          "Died within 30 days postop", "No death", "NA")))
-  
-#deathplot = ggplot(deathsum, aes(x = death, y = n, fill = death)) + 
-#  geom_bar(stat = "identity") + guides(fill = FALSE) + 
-#  labs(y = "") + theme_classic() 
-```
+### SSI and death association
 
 ``` r
-#SSIsum = healthdisease %>% group_by(any_ssi) %>% summarize(n = n()) %>% 
-#  mutate(any_ssi = as.factor(any_ssi))
-
-#SSIplot = ggplot(SSIsum, aes(x = any_ssi, y = n, fill = any_ssi)) + 
-#  geom_bar(stat = "identity") + guides(fill = FALSE) + labs(y = "") + 
-#  theme_classic() 
-```
-
-``` r
-#grid.arrange(deathplot, SSIplot, top = "Death and SSI distribution", left = "n")
-```
-
-### SSI level and health condition association
-
-``` r
-heatplot1 = healthdisease %>% 
-  select(-postop_ssi_super, -postop_ssi_deep, -postop_ssi_organspace, -death,
-         -surgical_approach) %>% 
-  na.omit() %>% 
-  gather(condition, score, -any_ssi) %>% 
-  group_by(any_ssi, condition) %>% 
-  summarise(score = sum(score))
-
-ggplot(heatplot1, mapping = aes(x = any_ssi, y = condition, fill = score)) + 
-  geom_tile() + scale_fill_gradient2('cases', low = "blue", mid = "white", 
-                                     high = "red", midpoint = 0) + theme_classic() 
-```
-
-![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
-
-### Death and health condition association
-
-``` r
-heatplot2 = healthdisease %>% 
+heatplot3 = healthdisease %>% 
   select(-postop_ssi_super, -postop_ssi_deep, -postop_ssi_organspace, 
-         -any_ssi, -surgical_approach) %>%
-  mutate(death = recode(death, `1` = "Died intraop", `2` = "Died within 30 days postop", 
-                   `3` = "No death")) %>% na.omit() %>% 
-  gather(condition, score, -death) %>% group_by(death, condition) %>% 
+         -surgical_approach) %>%
+  mutate(death = recode(death, `3` = "No death", `1` = "Died intraop", 
+                        `2` = "Died within 30 days postop"),
+         any_ssi = recode(any_ssi, `0` = "0 SSI", `1` = "1 SSI", `2` = "2 SSI")) %>%
+  na.omit() %>% 
+  gather(condition, score, -death, -any_ssi) %>%
+  gather(key, status, -condition, -score) %>% 
+  select(-key) %>% group_by(status, condition) %>% 
   summarise(score = sum(score)) 
 
-ggplot(heatplot2, mapping = aes(x = death, y = condition, fill = score)) + 
-  geom_tile() + scale_fill_gradient2('cases', low = "blue", mid = "white",
-                                     high = "red", midpoint = 0) + theme_classic() 
+ggplot(heatplot3, mapping = aes(x = status, y = condition, fill = score)) + 
+  geom_tile() + scale_fill_viridis() + theme_classic()
 ```
 
-![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 ### Outcome associated to number of prior conditions
