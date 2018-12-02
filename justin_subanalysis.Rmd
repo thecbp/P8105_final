@@ -58,7 +58,8 @@ ggplot(data = insurance_df,
   labs(
     x = "Insurance Payment Type",
     y = "SSI",
-    title = "Insurance Types and SSI"
+    title = "Insurance Types and SSI",
+    fill = ""
   )
 ```
 
