@@ -55,27 +55,29 @@ ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) +
 ![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 ``` r
-deathsum = healthdisease %>% group_by(death) %>% summarize(n = n()) %>% 
-  mutate(death = c("Died intraop", "Died within 30 days postop", 
-                   "No death", "NA"),
-         death = factor(death, levels = c("Died intraop", 
-                                          "Died within 30 days postop", "No death", "NA")))
+#deathsum = healthdisease %>% group_by(death) %>% summarize(n = n()) %>% 
+#  mutate(death = c("Died intraop", "Died within 30 days postop", 
+#                   "No death", "NA"),
+#         death = factor(death, levels = c("Died intraop", 
+#                                          "Died within 30 days postop", "No death", "NA")))
   
-deathplot = ggplot(deathsum, aes(x = death, y = n, fill = death)) + geom_bar(stat = "identity") + guides(fill = FALSE) + labs(y = "") + theme_classic() 
+#deathplot = ggplot(deathsum, aes(x = death, y = n, fill = death)) + 
+#  geom_bar(stat = "identity") + guides(fill = FALSE) + 
+#  labs(y = "") + theme_classic() 
 ```
 
 ``` r
-SSIsum = healthdisease %>% group_by(any_ssi) %>% summarize(n = n()) %>% 
-  mutate(any_ssi = as.factor(any_ssi))
+#SSIsum = healthdisease %>% group_by(any_ssi) %>% summarize(n = n()) %>% 
+#  mutate(any_ssi = as.factor(any_ssi))
 
-SSIplot = ggplot(SSIsum, aes(x = any_ssi, y = n, fill = any_ssi)) + geom_bar(stat = "identity") + guides(fill = FALSE) + labs(y = "") + theme_classic() 
+#SSIplot = ggplot(SSIsum, aes(x = any_ssi, y = n, fill = any_ssi)) + 
+#  geom_bar(stat = "identity") + guides(fill = FALSE) + labs(y = "") + 
+#  theme_classic() 
 ```
 
 ``` r
-grid.arrange(deathplot, SSIplot, top = "Death and SSI distribution", left = "n")
+#grid.arrange(deathplot, SSIplot, top = "Death and SSI distribution", left = "n")
 ```
-
-![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ### SSI level and health condition association
 
@@ -112,3 +114,5 @@ ggplot(heatplot2, mapping = aes(x = death, y = condition, fill = score)) +
 ```
 
 ![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+### Outcome associated to number of prior conditions
