@@ -96,8 +96,6 @@ ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) +
   theme_classic() + theme(axis.text.x = element_text(angle = 40, hjust = 1), legend.position="none") 
 ```
 
-
-
 #### SSI associated with the number of prior conditions
 In our dataset, we have SSI 0, 1, and 2, with 0 indicating no surgical site infection. We see a positive correlation between number of pre-operative health conditions and the resulting number of surgical site infection. 
 ```{r warning = FALSE, message = FALSE}

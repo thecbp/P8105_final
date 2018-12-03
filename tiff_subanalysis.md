@@ -5,27 +5,24 @@ Tiffany Tu
 
 ### How are successes distributed by patients with different diseases and prior conditions?
 
-  - Success can be measured by Surgical Site Infection (SSI) levels
-      - postop\_ssi\_super  
-      - postop\_ssi\_deep
-      - postop\_ssi\_organspace
-  - Pre-operative health condition descriptions
-      - Smoker: Tobacco use within 1 year
-      - Etoh: \>2 drinks/day two weeks prior to surgery
-      - Body Weight Loss: 10% of body weight loss 6 months prior to
-        surgery
-      - Chf: Congestive Heart Failure within 30 days prior to surgery
-      - Scd : Specific Carbohydrate Diet
-      - Copd: Chronic Obstructive Pulmonary Disease
-      - Dvt: Deep Vein Thrombosis
-      - Chronic Condition: steriods, immunosuppresive meds
-      - Preop-transfusion: RBCs within 72 hours of surgery
-      - Ventilator: ventilator dependent
+-   Success can be measured by Surgical Site Infection (SSI) levels
+-   postop\_ssi\_super
+-   postop\_ssi\_deep
+-   postop\_ssi\_organspace
 
-There are three levels of severity for variables sleep apnea and
-diabetes. All variables are converted to binary for this analysis and NA
-entries are set to 0, indicating that the patient does not have this
-condition.
+-   Pre-operative health condition descriptions
+-   Smoker: Tobacco use within 1 year
+-   Etoh: &gt;2 drinks/day two weeks prior to surgery
+-   Body Weight Loss: 10% of body weight loss 6 months prior to surgery
+-   Chf: Congestive Heart Failure within 30 days prior to surgery
+-   Scd : Specific Carbohydrate Diet
+-   Copd: Chronic Obstructive Pulmonary Disease
+-   Dvt: Deep Vein Thrombosis
+-   Chronic Condition: steriods, immunosuppresive meds
+-   Preop-transfusion: RBCs within 72 hours of surgery
+-   Ventilator: ventilator dependent
+
+There are three levels of severity for variables sleep apnea and diabetes. All variables are converted to binary for this analysis and NA entries are set to 0, indicating that the patient does not have this condition.
 
 #### Understanding our dataset
 
@@ -34,14 +31,13 @@ healthdisease %>% group_by(any_ssi) %>%
   summarize(n = n()) %>% kable()
 ```
 
-| any\_ssi |    n |
-| -------: | ---: |
-|        0 | 9931 |
-|        1 |  910 |
-|        2 |   27 |
+|  any\_ssi|     n|
+|---------:|-----:|
+|         0|  9931|
+|         1|   910|
+|         2|    27|
 
-We’ll take a look at the number of cases for each health condition
-available in our dataset.
+We'll take a look at the number of cases for each health condition available in our dataset.
 
 ``` r
 dist_healthdisease = healthdisease %>% 
@@ -63,14 +59,11 @@ ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) +
   theme_classic() + theme(axis.text.x = element_text(angle = 40, hjust = 1), legend.position="none") 
 ```
 
-![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](tiff_subanalysis_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 #### SSI associated with the number of prior conditions
 
-In our dataset, we have SSI 0, 1, and 2, with 0 indicating no surgical
-site infection. We see a positive correlation between number of
-pre-operative health conditions and the resulting number of surgical
-site infection.
+In our dataset, we have SSI 0, 1, and 2, with 0 indicating no surgical site infection. We see a positive correlation between number of pre-operative health conditions and the resulting number of surgical site infection.
 
 ``` r
 num_health = healthdisease %>% 
@@ -81,17 +74,11 @@ ggplot(num_health, aes(x = total, y = any_ssi)) + geom_smooth() +
   theme_classic() + ggtitle("Total number of prior health conditions vs SSI")
 ```
 
-![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](tiff_subanalysis_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
 #### SSI and death association to each health condition
 
-Comparing number of death and SSI cases side by side with each health
-condition, we see a nearly symmetric heatmap. There are fewer cases
-under patients that actually got SSI or died from the operation, so it
-is difficult to conclude any direct relationship between health
-condition and surgery outcome. We can see that there are a great number
-of successful cases for patients with sleep apnea, specific carbohydrate
-diet, perioperative sepsis, or ascites pre-operation.
+Comparing number of death and SSI cases side by side with each health condition, we see a nearly symmetric heatmap. There are fewer cases under patients that actually got SSI or died from the operation, so it is difficult to conclude any direct relationship between health condition and surgery outcome. We can see that there are a great number of successful cases for patients with sleep apnea, specific carbohydrate diet, perioperative sepsis, or ascites pre-operation.
 
 ``` r
 heatplot = healthdisease %>% 
@@ -110,10 +97,6 @@ ggplot(heatplot, mapping = aes(x = status, y = condition, fill = score)) +
   geom_tile() + scale_fill_distiller(palette = "RdYlBu") + theme_classic()
 ```
 
-![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](tiff_subanalysis_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
-We can’t make any conclusions regarding sugery success in relation to
-pre-operation health conditions because there are only few cases of SSI
-\> 0 as well as the number of death occurence. It is clear that the
-greater number of pre-operative health condition a patient has, the more
-likely it is for SSI to occur.
+We can't make any conclusions regarding sugery success in relation to pre-operation health conditions because there are only few cases of SSI &gt; 0 as well as the number of death occurence. It is clear that the greater number of pre-operative health condition a patient has, the more likely it is for SSI to occur.
