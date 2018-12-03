@@ -64,6 +64,7 @@ prettify_names = function(df) {
 catfactory = function(df) {
   new_df = df %>% 
     mutate(
+      site_cid_160801 = factor(site_cid_160801),
       cohort = as.factor(cohort),
       death_status = as.factor(death_status),
       admission_source = as.factor(admission_source),
@@ -81,7 +82,7 @@ catfactory = function(df) {
       had_chronic_cond = as.logical(had_chronic_cond),
       had_copd = as.logical(had_copd),
       had_c_artery_prob = as.logical(had_c_artery_prob),
-      had_diabetes = as.factor(had_diabetes),
+      had_diabetes = ifelse(as.factor(had_diabetes) != 1, 1, 0),
       is_on_dialysis = as.logical(is_on_dialysis),
       had_dis_cancer = as.logical(had_dis_cancer),
       had_dvt = as.logical(had_dvt),
@@ -99,13 +100,14 @@ catfactory = function(df) {
       is_on_beta_blocker = as.logical(is_on_beta_blocker),
       presence_drains = as.factor(presence_drains),
       surgical_approach = as.factor(surgical_approach),
-      asa_class_id = as.factor(presence_drains),
+      asa_class_id = ifelse(as.factor(presence_drains) >= 4, 1, 0),
       had_epidural = as.logical(had_epidural),
       had_cathether = as.logical(had_cathether),
       nerve_block = as.logical(nerve_block),
       on_anticoag = as.factor(on_anticoag),
       had_scd = as.logical(had_scd)
     )
+  
   return(new_df)
 }
 

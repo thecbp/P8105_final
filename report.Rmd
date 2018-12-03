@@ -193,89 +193,19 @@ We see that there is also an increasing trend in surgical site infections as the
 
 <h1 id="regress">Regression Analysis</h1>
 
-
-
-<h1 id="conclusion">Conclusion</h1>
-
-
-<h1 id="refs">References</h1>
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
-```
-
-We can see that the age are evenly distributed over the patients, with half of the patients aged above 64. However, with the youngest patient being 18 years old, we know that the colonic disease could also happen at early stage of life, and thus prevention and caution need to be taken care of early.
+With our literature review and personal exploration of the data, we have a set of variables to use for our logistic regression.
 
 While several surgical approaches have demonstrated to be effective ways for treatment, there are still small percentages of deaths after the surgery mainly due to surgical site infections or due to a combination of other diseases. The surgical approach can be subdivided into several approaches, or into one of open, laparoscopic, and robotic category. Different surgical approaches will have a severe impact on the final outcome of the surgery, and is one of the topics studied in this project. A detailed analysis is presented below in the data prepocessing section.
 
 The surgical approaches are presented in the following histogram (Open, Laparo-scopic, Laparoscopic Hand-Assisted, Laparoscopic converted to open, Robotic, Robotic converted to open, Raparoscopic single port, and other, respectively):
+
 ### Data Cleaning
-```{r}
+```{r data-cleaning }
 #Hospital Colectomy
 library(dummies)
-library(haven)
-raw_colectomy = read_dta("colectomy_raw_new.dta")
-n=nrow(raw_colectomy)
 
-# Cases in each hospital somewhat unbalanced: from 1 to 478.
-summary(as.numeric(table(raw_colectomy$site_cid_160801)))
-table(raw_colectomy$e_gender)
-#Men:Woman=1:1
-table(raw_colectomy$e_race)
-summary(raw_colectomy$val_age)
+raw_colectomy = read_dta("colectomy_raw_new.dta") # colectomies in report
 
-#Site ID as factor
-raw_colectomy$site_cid_160801=substr(raw_colectomy$site_cid_160801,2,4)
-raw_colectomy$site_cid_160801=as.numeric(raw_colectomy$site_cid_160801)
-raw_colectomy$site_cid_160801=as.factor(raw_colectomy$site_cid_160801)
-
-#EDA:
-#1.Histogram of cases in each hospital:
-library(ggplot2)
-hospitals = ggplot(raw_colectomy, aes(x = site_cid_160801)) + 
-  geom_bar() + 
-  labs(x = "Hospital", y = "Number of cases", title = "Histogram of Patients") +
-  theme(axis.text.x = element_text(angle = 90))
-print(hospitals)
-ggplot(raw_colectomy, aes(x = as.factor(surgical_approach))) + 
-  geom_bar(fill = "blue") + 
-  labs(x = "Approach", y = "Number of cases", title = 'Histogram of Surgical Approaches') +
-  theme(axis.text.x = element_text(angle = 90))
-
-
-table(raw_colectomy$surgical_approach)
-#  1    2    3    4    5    6    7   13   14   15   16   17   18 
-#5974 1986 1251  891  604   67   67    4   13    6    2    1    2 
-# 1 for open, 2 for Laparoscopic, 3 for Laparoscopic, Hand-Assisted
-# 4 for Laparoscopic, Converted to Open
-# 5 for Robotic
-# 6 for Robotic, Converted to Open
-# 7 for Laparoscopic, Single Port (SIL)
-# 13-18 for Other.
-
-#Remove the columns with mostly missing values: (less than 10000 colectomy cases)
-colectomy = raw_colectomy;
-colectomy.var = logical(ncol(colectomy))
-for(i in 1:ncol(colectomy)){
-  complete_case = complete.cases(colectomy[,i]);
-  complete_case = as.numeric(complete_case)
-  if(sum(complete_case) > 10000){
-    colectomy.var[i]=TRUE
-  }
-}
-table(colectomy.var) #554 variables removed.
-#colnames(colectomy)[!colectomy.var] #Name of variables removed.
-colectomy = colectomy[,colectomy.var]
-
-# factorize diabetes
-for(i in 1:10868){
-  if((colectomy$diabetes[i] == 2)||(colectomy$diabetes[i] == 3)||(colectomy$diabetes[i] == 4)){
-    colectomy$diabetes[i] = 1
-  } else {
-    colectomy$diabetes[i] = 0
-  }
-}
 # factorize asa level
 for(i in 1:10868){
   if((colectomy$asa_class_id[i] == 3)||(colectomy$asa_class_id[i] == 4)||(colectomy$asa_class_id[i] == 5)){
@@ -328,6 +258,24 @@ model_caret
 mean(fit_mort30$residuals^2)
 #RMSE=0.21, Rsquared=0.1 - bad % variantion acconted for
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1 id="conclusion">Conclusion</h1>
+
+
+<h1 id="refs">References</h1>
+
 Reference
 1. Wikipedia: ASA physical status classification system
 2. http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
