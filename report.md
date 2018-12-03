@@ -1,9 +1,25 @@
-Report Rough Draft
+What's In A Colectomy? An Analysis
 ================
 
-Introduction
-============
+![Ann Arbor, Michigan](./img/michigan_aerial.jpg)
 
+Table of Contents
+=================
+
+-   <a href="#intro">Introduction</a>
+-   <a href="#characterize">Data Characterization</a>
+-   <a href="#tidying">Tidying The Data</a>
+-   <a href="#lit">Literature Review</a>
+-   <a href="#sub">Subanalyses</a>
+-   <a href="#regress">Regression Analysis</a>
+-   <a href="#conclusion">Conclusion</a>
+-   <a href="#refs">References</a>
+
+------------------------------------------------------------------------
+
+<h1 id="intro">
+Introduction
+</h1>
 Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer to just being preventative. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years.[1](https://www.medscape.org/viewarticle/711126)
 
 Project Motivation
@@ -11,9 +27,9 @@ Project Motivation
 
 Given this, we wanted to investigate what factors contributed to increasing or decreasing the risk of post-operative complication. We have a dataset on colectomies performed from 2014 - 2016 from multiple hospitals in Michigan. Each row in the dataset represents a single colectomy and a multitude of other information concerning the surgery and the patient. Using this data, we plan to do a regression analysis to figure out which variables have an impact on affecting post-surgery complication.
 
+<h1 id="characterize">
 Data Characterization
-=====================
-
+</h1>
 Before anything else, we need to bring in the data and our toolkit for analyzing the data. In addition to `tidyverse`, we've created a set of helper functions and variables that we've stored in `utils.R` to save coding space. Our data will be stored in the `colectomies` variable.
 
 ``` r
@@ -39,9 +55,9 @@ Before we start our analyses, it's important for us to understand our data in it
 
 That being said, many of the columns are useless for our analysis. Many columns contain mostly or only missing data, denoted by either blank cells or `NA` strings. Before we can start the variable selection for our model, we need to tidy up the dataset.
 
+<h1 id="tidying">
 Tidying the Data
-================
-
+</h1>
 Data Reduction & Cleaning
 -------------------------
 
@@ -66,8 +82,24 @@ In our dataset, the outcome of interest we'll be focusing on is surgical site in
 ``` r
 tidy_colectomies = tidy_colectomies %>%
   catfactory(.) %>% 
-  mutate(any_ssi =  (postop_ssi_super + postop_ssi_deep +   postop_ssi_organspace) >= 1)
+  mutate(any_ssi = (postop_ssi_super + postop_ssi_deep +    postop_ssi_organspace) >= 1)
 ```
 
+Even with all of the data reduction, there are still too many variables to know which to include in the regression. In order to overcome this, we performed a brief literature review.
+
+<h1 id="lit">
+Literature Review: Relevant Factors
+</h1>
+<h1 id="sub">
+Subanalyses
+</h1>
+<h1 id="regress">
+Regression Analysis
+</h1>
+<h1 id="conclusion">
+Conclusion
+</h1>
+<h1 id="refs">
 References
-==========
+</h1>
+1.  <https://www.medscape.org/viewarticle/711126>
