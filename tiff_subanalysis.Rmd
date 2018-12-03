@@ -15,6 +15,7 @@ library(forcats)
 library(gridExtra)
 library(tidyr)
 library(RColorBrewer)
+library(knitr)
 source("./utils.R")
 
 dt = read_dta("colectomy_raw_new.dta")
@@ -54,8 +55,6 @@ prettify_names(tidy_colectomies)
 There are three levels of severity for variables sleep apnea and diabetes. All variables are converted to binary for this analysis and NA entries are set to 0, indicating that the patient does not have this condition. 
 
 #### Understanding our dataset
-
-We'll take a look at the number of cases for each health condition available in our dataset.
 ```{r include=FALSE}
 healthdisease = tidy_colectomies %>% 
   select(postop_ssi_super, postop_ssi_deep, postop_ssi_organspace, 
@@ -69,6 +68,13 @@ healthdisease = tidy_colectomies %>%
   mutate(any_ssi = postop_ssi_super + postop_ssi_deep + postop_ssi_organspace,
          diabetes = ifelse(diabetes == 1, 0, 1))
 ```
+
+```{r}
+healthdisease %>% group_by(any_ssi) %>% 
+  summarize(n = n()) %>% kable()
+```
+
+We'll take a look at the number of cases for each health condition available in our dataset.
 
 ```{r warning = FALSE}
 dist_healthdisease = healthdisease %>% 
@@ -89,6 +95,8 @@ ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) +
   geom_bar(stat = "identity") + ggtitle("Pre-operative health conditions") +
   theme_classic() + theme(axis.text.x = element_text(angle = 40, hjust = 1), legend.position="none") 
 ```
+
+
 
 #### SSI associated with the number of prior conditions
 In our dataset, we have SSI 0, 1, and 2, with 0 indicating no surgical site infection. We see a positive correlation between number of pre-operative health conditions and the resulting number of surgical site infection. 
@@ -122,3 +130,5 @@ ggplot(heatplot, mapping = aes(x = status, y = condition, fill = score)) +
 ```
 
 We can't make any conclusions regarding sugery success in relation to pre-operation health conditions because there are only few cases of SSI > 0 as well as the number of death occurence. It is clear that the greater number of pre-operative health condition a patient has, the more likely it is for SSI to occur. 
+
+
