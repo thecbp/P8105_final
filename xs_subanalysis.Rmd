@@ -1,62 +1,55 @@
 ---
 title: "xs_subanalysis"
 author: "Xiao Shi"
-date: "November 25, 2018"
+date: "December 2, 2018"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
-As discussed in Kaltenbach(2008), Propensity Score Matching (PSM) is designed for the purpose of avoiding comparisons between nonrandomized samples like apples and oranges, for example when assessing two surgeons having different patients. Also, sometimes it is unethical to assign patients to certain treatments in order to get randomized samples. We want to identify, in our hospital rankings case, that the difference in outcomes is attributable to hospitals or patients conditions. The matching scheme provides a way to summarize covariate information about treatment selection into a scalar value (called propensity score) so that matched pairs would have similar scalar value and therefore tend to have similar covariate information. (Kaltenbach, 2008)
+We can see that the age are evenly distributed over the patients, with half of the patients aged above 64. However, with the youngest patient being 18 years old, we know that the colonic disease could also happen at early stage of life, and thus prevention and caution need to be taken care of early.
 
-Specifically, we identify a specific hospital as a treatment effect. This process will be repeated for every hospital. Then, we model this treatment effect as a function of covariates with logistic regression. The current convention for selecting covariates is to include a potential confounder if unclear of its effect. Therefore, for two patients who are matched because of similar propensity score and one received treatment while the other did not, we can treat them as randomized samples assigned to the treatment/experiment group and control group. Subjects in the matched pairs tend to have similar distributions in covariates (Kaltenbach 2008). We thus have the expression, for each hospital i:
+While several surgical approaches have demonstrated to be effective ways for treatment, there are still small percentages of deaths after the surgery mainly due to surgical site infections or due to a combination of other diseases. The surgical approach can be subdivided into several approaches, or into one of open, laparoscopic, and robotic category. Different surgical approaches will have a severe impact on the final outcome of the surgery, and is one of the topics studied in this project. A detailed analysis is presented below in the data prepocessing section.
 
-$ln(\frac{PS_i}{1-PS_i}) = \alpha + \beta^T\chi$
-
-
-PS stands for propensity score. Then we match the propensity score using nearest neighbors with the ratio of 1:5; that is for each treatment patient we match it with the closest 5 patients in the control group. In this way, we get comparable samples adjusted for the apples-to-oranges concerns. Then we do a two sample T-test to calculate the T-scores between these samples and record the T-scores. We then repeat the process for each hospital and get 52 T-scores. These T-scores are ranked to generate the rankings with this method. A positive or high T-score will indicate that the hospital is performing poorly.
-
-The R package ”MatchIt” is used for implementation and the code is attached in the appendix. The tutorial by Simon Ejdemyr on propensity score matching has been a useful reference in implementation.
-
+The surgical approaches are presented in the following histogram (Open, Laparo-scopic, Laparoscopic Hand-Assisted, Laparoscopic converted to open, Robotic, Robotic converted to open, Raparoscopic single port, and other, respectively):
 ### Data Cleaning
 ```{r}
 #Hospital Colectomy
 library(dummies)
 library(haven)
-dt = read_dta("colectomy_raw_new.dta")
-n=nrow(dt)
-
-knitr::kable(dt$site_cid_160801)
+raw_colectomy = read_dta("colectomy_raw_new.dta")
+n=nrow(raw_colectomy)
 
 # Cases in each hospital somewhat unbalanced: from 1 to 478.
-summary(as.numeric(table(dt$site_cid_160801)))
-table(dt$e_gender)
+summary(as.numeric(table(raw_colectomy$site_cid_160801)))
+table(raw_colectomy$e_gender)
 #Men:Woman=1:1
-table(dt$e_race)
-summary(dt$val_age)
+table(raw_colectomy$e_race)
+summary(raw_colectomy$val_age)
 
 #Site ID as factor
-dt$site_cid_160801=substr(dt$site_cid_160801,2,4)
-dt$site_cid_160801=as.numeric(dt$site_cid_160801)
-dt$site_cid_160801=as.factor(dt$site_cid_160801)
+raw_colectomy$site_cid_160801=substr(raw_colectomy$site_cid_160801,2,4)
+raw_colectomy$site_cid_160801=as.numeric(raw_colectomy$site_cid_160801)
+raw_colectomy$site_cid_160801=as.factor(raw_colectomy$site_cid_160801)
 
 #EDA:
 #1.Histogram of cases in each hospital:
 library(ggplot2)
-ggplot(dt, aes(x = site_cid_160801)) + 
+hospitals = ggplot(raw_colectomy, aes(x = site_cid_160801)) + 
   geom_bar() + 
   labs(x = "Hospital", y = "Number of cases", title = "Histogram of Patients") +
   theme(axis.text.x = element_text(angle = 90))
-
-ggplot(dt, aes(x = as.factor(surgical_approach))) + 
+print(hospitals)
+ggplot(raw_colectomy, aes(x = as.factor(surgical_approach))) + 
   geom_bar(fill = "blue") + 
   labs(x = "Approach", y = "Number of cases", title = 'Histogram of Surgical Approaches') +
   theme(axis.text.x = element_text(angle = 90))
 
 
-table(dt$surgical_approach)
+table(raw_colectomy$surgical_approach)
 #  1    2    3    4    5    6    7   13   14   15   16   17   18 
 #5974 1986 1251  891  604   67   67    4   13    6    2    1    2 
 # 1 for open, 2 for Laparoscopic, 3 for Laparoscopic, Hand-Assisted
@@ -67,147 +60,80 @@ table(dt$surgical_approach)
 # 13-18 for Other.
 
 #Remove the columns with mostly missing values: (less than 10000 colectomy cases)
-colectomy = dt;
-colectomy.var = logical(ncol(dt))
-for(i in 1:ncol(dt)){
-  complete_case = complete.cases(dt[,i]);
+colectomy = raw_colectomy;
+colectomy.var = logical(ncol(colectomy))
+for(i in 1:ncol(colectomy)){
+  complete_case = complete.cases(colectomy[,i]);
   complete_case = as.numeric(complete_case)
   if(sum(complete_case) > 10000){
     colectomy.var[i]=TRUE
   }
 }
 table(colectomy.var) #554 variables removed.
-#colnames(dt)[!colectomy.var] #Name of variables removed.
-dt=dt[,colectomy.var]
-
-temp=is.element(colnames(dt),c('letter_flag','deletedby','deletereason'))
-dt=dt[,!temp]#Empty Columns.
-
-temp1=which(colnames(dt)==c('exp_timely_antibx'))
-temp2=which(colnames(dt)==c('exp_timely_antibx_colect'))
-temp1=which(colnames(dt)==c('otherprocscpt_1'))
-
-
-temp2=which(colnames(dt)==c('concurrentprocscpt_9'))
-dt=dt[,-c(temp1:temp2)]#Mostly Empty Columns
-
-temp=is.element(colnames(dt),c('preop_metastatic_cancer_liver',
-'preop_metastatic_cancer_lungs',
-'preop_metastatic_cancer_pelvis','preop_metastatic_cancer_other',
-'preop_metastatic_cancer_undoc2','preop_cea_date_unknown'))
-dt=dt[,!temp] #Empty Columns
-
-temp=which(colnames(dt)==c('id','casenum'))
-dt=dt[,-temp]#Irrelevant Info.
-
-temp=which(colnames(dt)==c('cpt_description'))
-dt=dt[,-temp]#Irrelevant Info.
-
-
-#Info From FMT_2
-temp1=which(colnames(dt)==c('flg_dead'))
-temp2=which(colnames(dt)==c('flg_cmp_vte_combined'))
-dt_resp2=dt[,temp1:temp2]
-
-ind=logical(ncol(dt_resp2))
-for(i in 1:ncol(dt_resp2)){
-if(substr(colnames(dt_resp2)[i],1,7)=='flg_cmp'){
-ind[i]=TRUE;
-}
-}
-ind[which(colnames(dt_resp2)=='flg_dead')]=TRUE;
-ind[which(colnames(dt_resp2)=='flg_dead30')]=TRUE;
-ind[which(colnames(dt_resp2)=='flg_util_reop')]=TRUE;
-
-
-ind[which(colnames(dt_resp2) == 'flg_util_readm')] = TRUE;
-ind[which(colnames(dt_resp2) == 'flg_util_ed')] = TRUE;
-ind[which(colnames(dt_resp2) == 'flg_util_extended_los')] = TRUE;
-ind[which(colnames(dt_resp2) == 'e_discharge_disposition')] = TRUE;
-ind[which(colnames(dt_resp2) == 'flg_postop_temp_gt968')] = TRUE;
-dt_resp=dt_resp2[,ind]
-#Col 1-8: dead/readmit/reop etc., 9-48: flg_cmp
-
-#Constructing response vector. 1 for failure. 0 for success.
-resp=numeric(nrow(dt))
-for( i in 1:n){
-temp=(dt_resp[i,1]==1)||(dt_resp[i,8]==1)||(dt_resp[i,7]==1)||(dt_resp[i,
-6]==1)||(dt_resp[i,3]==11)
-if(is.na(temp)) temp=FALSE;
-if(temp){resp[i]=1}
-}
-for( i in 1:n ){
-if(any(dt_resp[i,9:48]==1)){
-  resp[i]=1;
-  }
-}
-table(resp) #3450 failures.
-
-#The number of failures over different surgical procedures:
-temp=which(is.element(dt$surgical_approach,c(1,4,6)))
-
-#These are the approchaes that are either open or later converted to open.
-sum(resp[temp])
-#There are 2701.
-2701/length(temp)
-#There are 38.9% of the failure rate, much higher than 10% overall..
-#ASA-adjusted:
-table(dt$asa_class_id[temp])
-mean(dt$asa_class_id[temp])
-
-#Laparoscopic:
-temp=which(is.element(dt$surgical_approach,c(2,3,4)))
-table(dt$asa_class_id[temp])
-mean(dt$asa_class_id[temp])
-sum(resp[temp])/length(temp)
-#There are 21.3% of the failure rate, much higher than 10% overall..
-
-#Examine the use of robotic approach:
-temp=which(is.element(dt$surgical_approach,c(5,6)))
-sum(resp[temp])
-sum(resp[temp])/length(temp)
-#ASA-adjusted:
-table(dt$asa_class_id[temp])
-mean(dt$asa_class_id[temp])
+#colnames(colectomy)[!colectomy.var] #Name of variables removed.
+colectomy = colectomy[,colectomy.var]
 
 # factorize diabetes
 for(i in 1:10868){
-  if((dt$diabetes[i] == 2)||(dt$diabetes[i] == 3)||(dt$diabetes[i] == 4)){
-    dt$diabetes[i] = 1
+  if((colectomy$diabetes[i] == 2)||(colectomy$diabetes[i] == 3)||(colectomy$diabetes[i] == 4)){
+    colectomy$diabetes[i] = 1
   } else {
-    dt$diabetes[i] = 0
+    colectomy$diabetes[i] = 0
   }
 }
 # factorize asa level
 for(i in 1:10868){
-  if((dt$asa_class_id[i] == 3)||(dt$asa_class_id[i] == 4)||(dt$asa_class_id[i] == 5)){
-    dt$asa_class_id[i] = 1
+  if((colectomy$asa_class_id[i] == 3)||(colectomy$asa_class_id[i] == 4)||(colectomy$asa_class_id[i] == 5)){
+    colectomy$asa_class_id[i] = 1
   } else {
-    dt$asa_class_id[i] = 0
+    colectomy$asa_class_id[i] = 0
   }
 }
-colectomy_model = cbind.data.frame(dt$flg_dead30, dt$surgical_approach, dt$surgical_priority, dt$hypertension, dt$e_diabetes, dt$e_surgical_wound_closure, dt$asa_class_id) %>%
-colnames(colectomy_model) = c("flg_dead30", "surgical_approach", "surgical_priority", "hypertension", "e_diabetes", "e_surgical_wound_closure", "asa_class_id")
+
+colectomy_model = cbind.data.frame(colectomy$flg_dead30, colectomy$flg_cmp_ssi_any, colectomy$surgical_approach, colectomy$surgical_priority, colectomy$hypertension, colectomy$e_diabetes, colectomy$e_surgical_wound_closure, colectomy$asa_class_id, colectomy$smoker, colectomy$val_bmi)
+colnames(colectomy_model) = c("flg_dead30", "any_ssi", "surgical_approach", "surgical_priority", "hypertension", "e_diabetes", "e_surgical_wound_closure", "asa_class_id", "smoker", "bmi")
 
 cor(colectomy_model)
 # all correlations are below 0.27
 ## by mortality within 30 days
 for(i in 1:10868)
-  if(dt$cohort[i] == 1){
-    fit_mort30 <- glm(flg_dead30 ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure, data = colectomy_model)
+  if(colectomy$cohort[i] == 1){
+    fit_mort30 <- glm(flg_dead30 ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id, data = colectomy_model)
   }
 summary(fit_mort30)
 
 ## by ssi
 for(i in 1:10868)
-  if(dt$cohort[i] == 1){
-    fit_ssi <- glm(flg_cmp_ssi_any ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure, data = dt)
+  if(colectomy$cohort[i] == 1){
+    fit_ssi <- glm(any_ssi ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id, data = colectomy_model)
   }
 summary(fit_ssi)
 
+
+# testing the model validation
+library(leaps)
+colectomy_model = na.omit(colectomy_model)
+leaps(x = colectomy_model[,3:10], y = colectomy_model[,1], nbest=2, method="Cp")
+#we are not getting rid of anything
+
+library(caret)
+
+# Use 10-fold validation and create the training sets
+
+data_train<-trainControl(method="cv", number=5)
+
+# Fit the 4-variables model that we discussed in previous lectures
+model_caret<-train(flg_dead30 ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id, data=colectomy_model,
+                   trControl=data_train,
+                   method='glm',
+                   na.action=na.pass)
+  
+# Model predictions using 4 parts of the data for training 
+model_caret
+mean(fit_mort30$residuals^2)
+#RMSE=0.21, Rsquared=0.1 - bad % variantion acconted for
 ```
 Reference
-1. Lisa Kaltenbach, How To Use Propensity Score Analysis (2008)
-2. Simon Ejdemyr, R Tutorial 8: Propensity Score Matching,
-http://stanford.edu/ ejdemyr/r-tutorials-archive/tutorial8.html
-3. Wikipedia: ASA physical status classification system
+1. Wikipedia: ASA physical status classification system
+2. http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
+3. http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/

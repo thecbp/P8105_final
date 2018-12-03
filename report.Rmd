@@ -1,26 +1,46 @@
 ---
-title: "Report Rough Draft"
-date: "11/19/2018"
+title: "What's In A Colectomy? An Analysis"
 output: github_document
 ---
 
-# Introduction 
+![Ann Arbor, Michigan](./img/michigan_aerial.jpg)
 
-...
+# Table of Contents
+
+* <a href="#intro">Introduction</a>
+* <a href="#characterize">Data Characterization</a>
+* <a href="#tidying">Tidying The Data</a>
+* <a href="#lit">Literature Review</a>
+* <a href="#sub">Subanalyses</a>
+* <a href="#regress">Regression Analysis</a>
+* <a href="#conclusion">Conclusion</a>
+* <a href="#refs">References</a>
+
+---
+
+### Authors
+
+* Christian Pascual (UNI: cbp2128)
+* Justin Hsie (UNI: jih2119)
+* Tiffany Tu (UNI: tt2714)
+* Xiao Shi (UNI: xs:2330)
+
+<h1 id="intro">Introduction</h1>
+
+Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer to just being preventative. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years.[1](https://www.medscape.org/viewarticle/711126)
 
 ## Project Motivation
 
-...
+Given this, we wanted to investigate what factors contributed to increasing or decreasing the risk of post-operative complication. We have a dataset on colectomies performed from 2014 - 2016 from multiple hospitals in Michigan. Each row in the dataset represents a single colectomy and a multitude of other information concerning the surgery and the patient. Using this data, we plan to do a regression analysis to figure out which variables have an impact on affecting post-surgery complication.  
 
-# Data Characterization
+<h1 id="characterize">Data Characterization</h1>
 
-Before we start our analyses, it's important for us to understand our data in its original form.
+Before anything else, we need to bring in the data and our toolkit for analyzing the data. In addition to `tidyverse`, we've created a set of helper functions and variables that we've stored in `utils.R` to save coding space. Our data will be stored in the `colectomies` variable.
 
-## Libraries and settings
-
-```{r lib-imports, message = FALSE }
-# Our data analysis toolkit
+```{r setup, message = FALSE, warning = FALSE }
 library(tidyverse)
+library(haven)
+source("./utils.R")
 
 # Formatting plot output
 knitr::opts_chunk$set(
@@ -31,54 +51,186 @@ knitr::opts_chunk$set(
 theme_set(theme_classic() + 
             theme(legend.position = "bottom", 
                   plot.title = element_text(hjust = 0.5)))
+
+# Raw data
+colectomies = read_dta(file = './colectomy_raw_new.dta') 
 ```
 
-Our raw data is contained in `procedure10.csv`, so we'll bring it in and have a look at its size. 
+Before we start our analyses, it's important for us to understand our data in its original form. In its raw form, the data has `r nrow(colectomies)` rows and `r ncol(colectomies)` columns. Each row in this dataset corresponds to a single colectomy with an incredible amount of information associated with it. The data has already been purged of identifiable personal information, leaving us with a bevy of laboratory, disease, surgery and patient data. 
 
-```{r data-import }
-colectomies = read.csv(file = './procedure10.csv') 
+That being said, many of the columns are useless for our analysis. Many columns contain mostly or only missing data, denoted by either blank cells or `NA` strings. Before we can start the variable selection for our model, we need to tidy up the dataset. 
 
-# TODO: Figure out how to grab data from specific URL (ie OneDrive)
-```
+<h1 id="tidying">Tidying the Data</h1>
 
-In its raw form, `colectomies` has `r nrow(colectomies)` rows and `r ncol(colectomies)` columns. Each row in this dataset corresponds to a single colectomy with an incredible amount of information associated with it. The data has already been purged of identifiable personal information, leaving us with a bevy of laboratory, disease and patient data. 
-
-That being said, many of the columns are useless for regression analysis. Many columns are contain mostly or only missing data, denoted by blank cells or `NA`. Before we can start the variable selection for our model, we need to tidy up the dataset. 
-
-# Data Cleaning
+## Data Reduction & Cleaning
 
 To start the cleaning, we want to remove all columns that contain more than 50% missing values (either blank cells or `NA`). Furthermore, some of the columns actually contain duplicate information from others. These duplicate columns start with `flg` or `e`. 
 
 ```{r data-reduction }
-is_mostly_intact = function(col) {
-  # Account for literal NAs and blanks
-  missings = is.na(col) | col == "" | col == "NA"
-  return(sum(missings) <= (3084 / 2))
-}
-
 tidy_colectomies = colectomies %>% 
   select(-starts_with("flg_"), -starts_with("e_")) %>% 
-  select_if(unlist(map(., is_mostly_intact), use.names = FALSE))
+  select_if(unlist(map(., is_mostly_intact), use.names = FALSE)) %>% 
+  prettify_names(.) 
 ```
 
-After the removal of duplicate columns and columns with more than 50% missing data, `tidy_colectomies` comes to be `r nrow(tidy_colectomies)` rows and `r ncol(tidy_colectomies)` columns. 
+Our function, `is_mostly_intact`, helps us identify columns that are more than 50% missing or blank. `prettify_names` helps us mass-change the column names in the dataset in a succinct way, leaving variables that are more informative to code with. After this purge, our reduced dataset now stands at `r nrow(tidy_colectomies)` rows and `r ncol(tidy_colectomies)` columns. 
 
-Many of the columns have uninuitive or non-descriptive names, so change these up to reflect the information they convey. There are too many columns to rename inline, so we created a function `prettyify_names` in `utils.R` to do it compactly in this report. 
+## Data Cleaning
 
-```{r mass-renaming }
-source("./utils.R")
-tidy_colectomies = prettify_names(tidy_colectomies)
+Many of the columns in the data appear to be numerical, but are in fact, categorical. We've created a function `catfactory` in `utils.R` to contain all the particular details on which variables needed coercing. 
+
+In our dataset, the outcome of interest we'll be focusing on is surgical site infection (SSI). We believe that focusing on this aspect of post-operation allows us to narrow down the scope of our analysis, while allowing for the greatest breadth for defining "complication". Surgical site infection is actually contained in 3 particular columns (`postop_ssi_super`,  `postop_ssi_deep` and `postop_ssi_organspace`) in the dataset, which we'll compile into one summary variable `any_ssi`.
+
+```{r data-cleaning }
+tidy_colectomies = tidy_colectomies %>%
+  catfactory(.) %>% 
+  mutate(any_ssi = (postop_ssi_super + postop_ssi_deep + 	postop_ssi_organspace) >= 1)
 ```
 
+Even with all of the data reduction, there are still too many variables to know which to include in the regression. In order to overcome this, we performed a brief literature review.
+
+<h1 id="lit">Literature Review: Relevant Factors</h1>
+
+<h1 id="sub">Subanalyses</h1>
+
+<h1 id="regress">Regression Analysis</h1>
+
+<h1 id="conclusion">Conclusion</h1>
 
 
+<h1 id="refs">References</h1>
 
-# For checking current dataset in Excel (not include in report)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
 
+We can see that the age are evenly distributed over the patients, with half of the patients aged above 64. However, with the youngest patient being 18 years old, we know that the colonic disease could also happen at early stage of life, and thus prevention and caution need to be taken care of early.
+
+While several surgical approaches have demonstrated to be effective ways for treatment, there are still small percentages of deaths after the surgery mainly due to surgical site infections or due to a combination of other diseases. The surgical approach can be subdivided into several approaches, or into one of open, laparoscopic, and robotic category. Different surgical approaches will have a severe impact on the final outcome of the surgery, and is one of the topics studied in this project. A detailed analysis is presented below in the data prepocessing section.
+
+The surgical approaches are presented in the following histogram (Open, Laparo-scopic, Laparoscopic Hand-Assisted, Laparoscopic converted to open, Robotic, Robotic converted to open, Raparoscopic single port, and other, respectively):
+### Data Cleaning
 ```{r}
-# Sanity check the current
-# write.csv(tidy_colectomies, file = "./test.csv")
+#Hospital Colectomy
+library(dummies)
+library(haven)
+raw_colectomy = read_dta("colectomy_raw_new.dta")
+n=nrow(raw_colectomy)
+
+# Cases in each hospital somewhat unbalanced: from 1 to 478.
+summary(as.numeric(table(raw_colectomy$site_cid_160801)))
+table(raw_colectomy$e_gender)
+#Men:Woman=1:1
+table(raw_colectomy$e_race)
+summary(raw_colectomy$val_age)
+
+#Site ID as factor
+raw_colectomy$site_cid_160801=substr(raw_colectomy$site_cid_160801,2,4)
+raw_colectomy$site_cid_160801=as.numeric(raw_colectomy$site_cid_160801)
+raw_colectomy$site_cid_160801=as.factor(raw_colectomy$site_cid_160801)
+
+#EDA:
+#1.Histogram of cases in each hospital:
+library(ggplot2)
+hospitals = ggplot(raw_colectomy, aes(x = site_cid_160801)) + 
+  geom_bar() + 
+  labs(x = "Hospital", y = "Number of cases", title = "Histogram of Patients") +
+  theme(axis.text.x = element_text(angle = 90))
+print(hospitals)
+ggplot(raw_colectomy, aes(x = as.factor(surgical_approach))) + 
+  geom_bar(fill = "blue") + 
+  labs(x = "Approach", y = "Number of cases", title = 'Histogram of Surgical Approaches') +
+  theme(axis.text.x = element_text(angle = 90))
+
+
+table(raw_colectomy$surgical_approach)
+#  1    2    3    4    5    6    7   13   14   15   16   17   18 
+#5974 1986 1251  891  604   67   67    4   13    6    2    1    2 
+# 1 for open, 2 for Laparoscopic, 3 for Laparoscopic, Hand-Assisted
+# 4 for Laparoscopic, Converted to Open
+# 5 for Robotic
+# 6 for Robotic, Converted to Open
+# 7 for Laparoscopic, Single Port (SIL)
+# 13-18 for Other.
+
+#Remove the columns with mostly missing values: (less than 10000 colectomy cases)
+colectomy = raw_colectomy;
+colectomy.var = logical(ncol(colectomy))
+for(i in 1:ncol(colectomy)){
+  complete_case = complete.cases(colectomy[,i]);
+  complete_case = as.numeric(complete_case)
+  if(sum(complete_case) > 10000){
+    colectomy.var[i]=TRUE
+  }
+}
+table(colectomy.var) #554 variables removed.
+#colnames(colectomy)[!colectomy.var] #Name of variables removed.
+colectomy = colectomy[,colectomy.var]
+
+# factorize diabetes
+for(i in 1:10868){
+  if((colectomy$diabetes[i] == 2)||(colectomy$diabetes[i] == 3)||(colectomy$diabetes[i] == 4)){
+    colectomy$diabetes[i] = 1
+  } else {
+    colectomy$diabetes[i] = 0
+  }
+}
+# factorize asa level
+for(i in 1:10868){
+  if((colectomy$asa_class_id[i] == 3)||(colectomy$asa_class_id[i] == 4)||(colectomy$asa_class_id[i] == 5)){
+    colectomy$asa_class_id[i] = 1
+  } else {
+    colectomy$asa_class_id[i] = 0
+  }
+}
+
+colectomy_model = cbind.data.frame(colectomy$flg_dead30, colectomy$flg_cmp_ssi_any, colectomy$surgical_approach, colectomy$surgical_priority, colectomy$hypertension, colectomy$e_diabetes, colectomy$e_surgical_wound_closure, colectomy$asa_class_id, colectomy$smoker, colectomy$val_bmi)
+colnames(colectomy_model) = c("flg_dead30", "any_ssi", "surgical_approach", "surgical_priority", "hypertension", "e_diabetes", "e_surgical_wound_closure", "asa_class_id", "smoker", "bmi")
+
+cor(colectomy_model)
+# all correlations are below 0.27
+## by mortality within 30 days
+for(i in 1:10868)
+  if(colectomy$cohort[i] == 1){
+    fit_mort30 <- glm(flg_dead30 ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id, data = colectomy_model)
+  }
+summary(fit_mort30)
+
+## by ssi
+for(i in 1:10868)
+  if(colectomy$cohort[i] == 1){
+    fit_ssi <- glm(any_ssi ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id, data = colectomy_model)
+  }
+summary(fit_ssi)
+
+
+# testing the model validation
+library(leaps)
+colectomy_model = na.omit(colectomy_model)
+leaps(x = colectomy_model[,3:10], y = colectomy_model[,1], nbest=2, method="Cp")
+#we are not getting rid of anything
+
+library(caret)
+
+# Use 10-fold validation and create the training sets
+
+data_train<-trainControl(method="cv", number=5)
+
+# Fit the 4-variables model that we discussed in previous lectures
+model_caret<-train(flg_dead30 ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id, data=colectomy_model,
+                   trControl=data_train,
+                   method='glm',
+                   na.action=na.pass)
+  
+# Model predictions using 4 parts of the data for training 
+model_caret
+mean(fit_mort30$residuals^2)
+#RMSE=0.21, Rsquared=0.1 - bad % variantion acconted for
 ```
+Reference
+1. Wikipedia: ASA physical status classification system
+2. http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
+3. http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/
 
-
-
+1. https://www.medscape.org/viewarticle/711126

@@ -14,9 +14,6 @@ prettify_names = function(df) {
       death_status = death,
       surg_priority_status = surgical_priority,
       is_complete = complete,	
-      v2_ed_in_30 = v2_ed_in_30, #CHECK
-      v2_readmit_in_30 = v2_readmit_in_30, #CHECK
-      v2_reop_in_30	= v2_reop_in_30, #CHECK
       is_hispanic = ethnicity_hispanic,	
       had_ascites = ascites,	
       had_bleeding_disorder = bleeding_disorder,
@@ -29,8 +26,7 @@ prettify_names = function(df) {
       is_on_dialysis = dialysis,
       had_dis_cancer = disseminated_cancer,
       had_dvt = dvt,
-      had_etoh = etoh,	
-      had_family_dvt = family_dvt,
+      had_etoh = etoh,
       height_unit	= height_unit, #CHECK
       had_hypertension = hypertension,
       had_open_wound = open_wound,
@@ -57,11 +53,138 @@ prettify_names = function(df) {
       age = val_age,
       height = val_height,
       weight = val_weight, 
-      bmi = val_bmi,
-      length_of_stay = val_los,
-      intraop_temp_celsius = intraop_temp_c,	
+      length_of_stay = val_los,	
       operation = op_year
     )
     
   return(new_df)
+}
+
+# Function to help assure columns are of the correct type
+catfactory = function(df) {
+  new_df = df %>% 
+    mutate(
+      cohort = as.factor(cohort),
+      admission_source = as.factor(admission_source),
+      discharge_destination = as.factor(discharge_destination),
+      still_in_hospital = as.logical(still_in_hospital),
+      surg_priority_status = as.factor(surg_priority_status),
+      insurance_payment_type = as.factor(insurance_payment_type),
+      race = as.factor(race),
+      sex = as.factor(sex),
+      is_hispanic = as.factor(is_hispanic),
+      had_ascites = as.logical(had_ascites),
+      had_bleeding_disorder = as.logical(had_bleeding_disorder),
+      had_body_weight_loss = as.logical(had_body_weight_loss),
+      had_chf = as.logical(had_chf),
+      had_chronic_cond = as.logical(had_chronic_cond),
+      had_copd = as.logical(had_copd),
+      had_c_artery_prob = as.logical(had_c_artery_prob),
+      had_diabetes = as.logical(had_diabetes),
+      is_on_dialysis = as.logical(is_on_dialysis),
+      had_dis_cancer = as.logical(had_dis_cancer),
+      had_dvt = as.logical(had_dvt),
+      had_etoh = as.logical(had_etoh),
+      functional_status = as.factor(functional_status),
+      had_hypertension = as.logical(had_hypertension),
+      had_open_wound = as.logical(had_open_wound),
+      had_pvd = as.logical(had_pvd),
+      had_pneumonia = as.logical(had_pneumonia),
+      had_preop_sepsis = as.logical(had_preop_sepsis),
+      had_preop_transfusion = as.logical(had_preop_transfusion),
+      had_sleep_apnea = as.logical(had_sleep_apnea),
+      is_smoker = as.logical(is_smoker),
+      is_on_ventilator = as.logical(is_on_ventilator),
+      is_on_beta_blocker = as.logical(is_on_beta_blocker),
+      presence_drains = as.factor(presence_drains),
+      surgical_approach = as.factor(surgical_approach),
+      asa_class_id = as.factor(presence_drains),
+      had_epidural = as.logical(had_epidural),
+      had_cathether = as.logical(had_cathether),
+      nerve_block = as.logical(nerve_block),
+      on_anticoag = as.factor(on_anticoag),
+      had_scd = as.logical(had_scd)
+    )
+  return(new_df)
+}
+
+# The _states variables are for use in the Shiny application
+patient_states_util = c(
+  "Age" = "age",
+  "BMI" = "bmi",
+  "Functional Status" = "functional_status",
+  "Height (in)" = "height_in",
+  "Length of Stay" = "length_of_stay",
+  "On Ventilator" = "is_on_ventilator",
+  "On Beta Blockers" = "is_on_beta_blocker",
+  "On LMWH" = "lmwh",
+  "On Nerve Blockers" = "nerve_block",
+  "On Anticoagulants" = "on_anticoag",
+  "Race" = "race",
+  "Severity" = "asa_class_id",
+  "Sex" = "sex",
+  "Smoker" = "is_smoker",
+  "Still In Hospital" = "still_in_hospital",
+  "Weight (lb)" = "weight_lb"
+)
+
+disease_states_util = c(
+  "Ascites" = "had_ascites",
+  "Bleeding Disorder" = "had_bleeding_disorder",
+  "CHF" = "had_chf",
+  "Chronic Condition" = "had_chronic_cond",
+  "COPD" = "had_copd",
+  "Coronary Artery Problem" = "had_c_artery_prob",
+  "Diabetes" = "had_diabetes",
+  "DVT" = "had_dvt",
+  "ETOH" = "had_etoh",
+  "Hypertension" = "had_hypertension",
+  "Open Wound" = "had_open_wound",
+  "PVD" = "had_pvd",
+  "Pneumonia" = "had_pneumonia",
+  "Sleep Apnea" = "had_sleep_apnea",
+  "SCD" = "had_scd"
+)
+
+surgery_states_util = c(
+  "Drain Presence" = "presence_drains",
+  "Had Cathether" = "had_cathether",
+  "Had Epidural" = "had_epidural",
+  "Placed in ICU Postop" = "admit_to_icu_postsurg",
+  "Preop Sepsis" = "had_preop_sepsis",
+  "Preop Transfusion" = "had_preop_transfusion",
+  "Surgery Year" = "operation",
+  "Surgical Approach" = "surgical_approach",
+  "Surgery Priority" = "surg_priority_status"
+)
+
+lab_states_util = c(
+  "Albumin" = "albumin",
+  "Bilirubin" = "bilirubin",
+  "Blood Glucose" = "bloodglucose",
+  "Creatinine" = "creatinine",
+  "Hematocrit" = "hct",
+  "Hemoglobin" = "hemoglobin",
+  "INR" = "inr",
+  "Lactate" = "lactate",
+  "Plate Count" = "platecount",
+  "WBC" = "wbc"
+)
+
+mapCoeffsToColor = function(coeffs) {
+  colors = map(coeffs, function(val) ifelse(val > 0, 
+                                            'rgba(50, 205, 50, 0.8)', 
+                                            'rgba(222, 45 ,38 ,0.8)'))
+  return(colors)
+}
+
+mapCoeffsToText = function(coeffs) {
+  
+  positiveText = "This coefficient is positive, suggesting that\n its associated odds ratio is greater than 1."
+  negativeText = "This coefficient is negative\n, suggesting that\n its associated odds ratio is less than 1."
+  
+  textOptions = map(coeffs, function(val) ifelse(val > 0,
+                                                 positiveText,
+                                                 negativeText))
+  return(textOptions)
 }

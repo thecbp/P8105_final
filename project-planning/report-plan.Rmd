@@ -34,15 +34,31 @@ output: github_document
 * how are successes distributed by insurance status? - Justin
 * how are successes associated with ASA level? - Christian 
 * does the number of surgeries & successes change with time?
+* What variables do we keep for the logistic regression?
 
-## Modeling
+## Modeling - Christian
 
 * make model based on variables of interest from subanalyses
 * cross-validation 
-* comparison to some other model from literture
+* bootstrapping
+* final model
 
-## Conclusion
+## Conclusion - Christian
 
 * What factors are associated with SSI?
   * positively? negatively?
 * What factors ended up being non-significant?
+
+
+## Site 
+
+* intro to project
+* full analysis
+* shiny link
+
+
+## Screencast
+
+* look at intro page
+* look at full analysis
+* demo the shiny app
