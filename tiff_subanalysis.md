@@ -54,7 +54,7 @@ ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) +
 
 ![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-#### SSI outcome associated with the number of prior conditions
+#### SSI associated with the number of prior conditions
 
 In our dataset, we have SSI 0, 1, and 2, with 0 indicating no surgical
 site infection. We see a positive correlation between number of
@@ -67,12 +67,21 @@ num_health = healthdisease %>%
   mutate(total = pmap_dbl(select(., -any_ssi, -surgical_approach), sum))
 
 ggplot(num_health, aes(x = total, y = any_ssi)) + geom_smooth() + 
-  theme_classic() + ggtitle("Number of prior health conditions vs SSI")
+  theme_classic() + ggtitle("Total number of prior health conditions vs SSI")
 ```
 
 ![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 #### SSI and death association to each health condition
+
+Comparing number of death and SSI cases side by side with each health
+condition, we see a nearly symmetric heatmap. There are fewer cases
+under patients that actually got SSI or died from the operation, so it
+is difficult to conclude any direct relationship between health
+condition and surgery outcome. We can see that there are a great number
+of successful cases for patients with sleep apnea, specific carbohydrate
+diet, perioperative sepsis, or ascites pre-operation. It is also evident
+that SSI is a good predictor for surgery success.
 
 ``` r
 heatplot = healthdisease %>% 
@@ -88,7 +97,11 @@ heatplot = healthdisease %>%
   summarise(score = sum(score)) 
 
 ggplot(heatplot, mapping = aes(x = status, y = condition, fill = score)) + 
-  geom_tile() + scale_fill_viridis() + theme_classic()
+  geom_tile() + scale_fill_distiller(palette = "RdYlBu") + theme_classic()
 ```
 
 ![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+We can’t make any conclusions regarding sugery success in relation to
+pre-operation health conditions because there are only few cases of SSI
+\> 0 as well as the number of death occurence.
