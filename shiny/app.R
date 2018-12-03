@@ -1,38 +1,33 @@
-library(shiny)
 library(broom)
-library(flexdashboard)
-library(tidyverse)
+library(caret)
 library(plotly)
 library(shiny)
 library(shinyWidgets)
+library(tidyverse)
+
 source("../utils.R")
 
 colectomies = read.csv(file = '../procedure10.csv')  %>% 
   select(-starts_with("flg_"), -starts_with("e_")) %>% 
   select_if(unlist(map(., is_mostly_intact), use.names = FALSE)) %>% 
   prettify_names(.) %>% 
-  mutate(any_ssi =  (postop_ssi_super + postop_ssi_deep + postop_ssi_organspace) >= 1)
+  mutate(any_ssi = factor((postop_ssi_super + postop_ssi_deep + postop_ssi_organspace) >= 1))
 
-ui <- fillPage(
-  # This row contains the graphs to be made for the regression
-  fillRow(
-    fillCol(plotOutput("coeffsGraph"), height = "100%", width = "100%"),
-    fillCol(plotOutput("CIGraph"), height = "100%", width = "100%"),
-    flex = c(3, 2),
-    height = "50%"
-    ),
+ui = fluidPage(
+  
+  titlePanel("Colectomy Success Model Tool"),
+  
+  sidebarLayout(
     
-  # This row contains controls for picking the regression covariates
-  fillRow(
-    # Button to proceed with regression
-    fillCol(
-      titlePanel("Colectomy Infection Prediction"),
-      helpText("Think you can predict what will cause an infection? Create a model and then create your regression to see how it fares!"),
-      actionButton("submit", "Regress!"), width = "100%"),
-    
-    # Covariates for patient and disease information
-    fillCol(
+    sidebarPanel(
       
+      helpText("You are in charge of creating a new model for predicting post-colectomy infections! 
+                Choose a few variables below and see how your model turns out. You may see how 
+                statistically significant your coefficients are as well as your model's 
+               predictive ability."),
+      
+      
+      # Picker for patient variables
       pickerInput(
         inputId = "patientStates", 
         label = "Possible patient variables", 
@@ -41,9 +36,10 @@ ui <- fillPage(
           `actions-box` = TRUE, 
           size = 12,
           `selected-text-format` = "count > 3"
-          ), 
+        ), 
         multiple = TRUE),
       
+      # Picker for disease variables
       pickerInput(
         inputId = "diseaseStates", 
         label = "Possible disease variables", 
@@ -52,39 +48,50 @@ ui <- fillPage(
           `actions-box` = TRUE,
           size = 10,
           `selected-text-format` = "count > 3"
-          ), 
-        multiple = TRUE)
+        ), 
+        multiple = TRUE),
+      
+      # Picker for surgery variables
+      pickerInput(
+        inputId = "surgStates", 
+        label = "Possible surgery variables", 
+        choices = surgery_states_util, 
+        options = list(
+          `actions-box` = TRUE, 
+          size = 10,
+          `selected-text-format` = "count > 3"
+        ), 
+        multiple = TRUE),
+      
+      # Picker for laboratory variables
+      pickerInput(
+        inputId = "labStates", 
+        label = "Possible laboratory variables", 
+        choices = lab_states_util, 
+        options = list(
+          `actions-box` = TRUE, 
+          size = 10,
+          `selected-text-format` = "count > 3"
+        ), 
+        multiple = TRUE
       ),
-     
-    # Covariates for surgery and lab information
-     fillCol(
-       pickerInput(
-         inputId = "surgStates", 
-         label = "Possible surgery variables", 
-         choices = surgery_states_util, 
-         options = list(
-           `actions-box` = TRUE, 
-           size = 10,
-           `selected-text-format` = "count > 3"
-           ), 
-         multiple = TRUE),
-       
-       pickerInput(
-         inputId = "labStates", 
-         label = "Possible disease  variables", 
-         choices = lab_states_util, 
-         options = list(
-           `actions-box` = TRUE, 
-           size = 10,
-           `selected-text-format` = "count > 3"
-           ), 
-         multiple = TRUE
-         )),
-    flex = c(1, 1, 1),
-    height = "30%"
+      
+      actionBttn("submit", "Regress!")
+      
+      
+      ),
+    
+    
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Coefficient Magnitudes", plotOutput("coeffsGraph")),
+        tabPanel("Statistical Significance", plotOutput("statsGraph"))
+      )
+      
+      )
     )
   )
-
+    
 server <- function(input, output) {
 
   # Compile all the covariates into a formula for the regression
@@ -107,23 +114,32 @@ server <- function(input, output) {
   observeEvent(input$submit, {
     
     output$coeffsGraph = renderPlot({
-      broom::tidy(log.model()) %>% 
-        ggplot(data = ., aes(x = term, y = estimate)) +
+      tidy(log.model()) %>% 
+        mutate(OR = exp(estimate)) %>% 
+        ggplot(data = ., aes(x = term, y = estimate, fill = term)) +
         geom_bar(stat = "identity") +
         labs(
-          title = "Magnitude of logistic regression coefficients",
           x = "Covariate",
           y = "Coefficient estimate"
         )
-    })
+      })
     
-    output$CIGraph = renderPlot({
-      broom::tidy(log.model()) %>% 
-        ggplot(data = ., aes(x = term, y = estimate)) +
-        geom_bar(stat = "identity")
+    output$statsGraph = renderPlot({
+      tidy(log.model()) %>% 
+        mutate(OR = exp(estimate),
+               low.bound = exp(estimate - 1.96 * std.error),
+               high.bound = exp(estimate + 1.96 * std.error)) %>% 
+        ggplot(data = ., aes(x = term, y = OR, color = term)) +
+        geom_point() +
+        geom_errorbar(aes(ymin = low.bound, ymax = high.bound)) +
+        geom_hline(yintercept = 1, alpha = 0.3, color = "red") +
+        labs(
+          x = "Covariate",
+          y = "Odds ratio estimate"
+        )
     })
-  })
-}
+    })
+  }
 
 # Run the application 
 shinyApp(ui = ui, server = server)

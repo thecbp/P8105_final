@@ -17,6 +17,13 @@ Table of Contents
 
 ------------------------------------------------------------------------
 
+### Authors
+
+-   Christian Pascual (UNI: cbp2128)
+-   Justin Hsie (UNI: jih2119)
+-   Tiffany Tu (UNI: tt2714)
+-   Xiao Shi (UNI: xs:2330)
+
 <h1 id="intro">
 Introduction
 </h1>
