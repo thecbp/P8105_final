@@ -84,8 +84,8 @@ ui = fluidPage(
     
     mainPanel(
       tabsetPanel(
-        tabPanel("Coefficient Magnitudes", plotOutput("coeffsGraph")),
-        tabPanel("Statistical Significance", plotOutput("statsGraph"))
+        tabPanel("Coefficient Magnitudes", plotlyOutput("coeffsGraph")),
+        tabPanel("Statistical Significance", plotlyOutput("statsGraph"))
       )
       
       )
@@ -113,31 +113,40 @@ server <- function(input, output) {
   # Act upon a user pressing the Regress button
   observeEvent(input$submit, {
     
-    output$coeffsGraph = renderPlot({
-      tidy(log.model()) %>% 
-        mutate(OR = exp(estimate)) %>% 
-        ggplot(data = ., aes(x = term, y = estimate, fill = term)) +
-        geom_bar(stat = "identity") +
-        labs(
-          x = "Covariate",
-          y = "Coefficient estimate"
-        )
-      })
+    output$coeffsGraph = renderPlotly({
+      tidy(log.model()) %>%
+        plot_ly(
+          x = ~term,
+          y = ~estimate, 
+          type = "bar",
+          text = mapCoeffsToText(.$estimate),
+          marker = list(
+            color = mapCoeffsToColor(.$estimate)
+          ) 
+        ) %>% 
+        layout(xaxis = list(title = "Coefficient Term", tickangle = -45),
+               yaxis = list(title = "Coefficient Magnitude"),
+               margin = list(b = 100))
+    })
     
-    output$statsGraph = renderPlot({
+    output$statsGraph = renderPlotly({
       tidy(log.model()) %>% 
         mutate(OR = exp(estimate),
                low.bound = exp(estimate - 1.96 * std.error),
                high.bound = exp(estimate + 1.96 * std.error)) %>% 
-        ggplot(data = ., aes(x = term, y = OR, color = term)) +
-        geom_point() +
-        geom_errorbar(aes(ymin = low.bound, ymax = high.bound)) +
-        geom_hline(yintercept = 1, alpha = 0.3, color = "red") +
-        labs(
-          x = "Covariate",
-          y = "Odds ratio estimate"
-        )
+        plot_ly(
+          x = ~term,
+          y = ~OR,
+          type = "scatter",
+          mode = "markers",
+          color = ~term,
+          error_y = ~list(array = c(.$low.bound, .$high.bound))
+        ) %>% 
+        layout(xaxis = list(title = "Coefficient Term", tickangle = -45),
+               yaxis = list(title = "Adjusted Odds Ratio"),
+               margin = list(b = 100))
     })
+  
     })
   }
 

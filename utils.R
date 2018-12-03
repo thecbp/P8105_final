@@ -170,3 +170,21 @@ lab_states_util = c(
   "Plate Count" = "platecount",
   "WBC" = "wbc"
 )
+
+mapCoeffsToColor = function(coeffs) {
+  colors = map(coeffs, function(val) ifelse(val > 0, 
+                                            'rgba(50, 205, 50, 0.8)', 
+                                            'rgba(222, 45 ,38 ,0.8)'))
+  return(colors)
+}
+
+mapCoeffsToText = function(coeffs) {
+  
+  positiveText = "This coefficient is positive, suggesting that\n its associated odds ratio is greater than 1."
+  negativeText = "This coefficient is negative\n, suggesting that\n its associated odds ratio is less than 1."
+  
+  textOptions = map(coeffs, function(val) ifelse(val > 0,
+                                                 positiveText,
+                                                 negativeText))
+  return(textOptions)
+}
