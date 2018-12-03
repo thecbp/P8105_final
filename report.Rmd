@@ -153,8 +153,47 @@ In the second plot, we can see the percentage of SSI occurences out of the total
 
 In the end, it seems that there is no relationship between insurance type and occurence of SSIs.
 
+### How are SSI distributed in patients with different diseases and prior conditions? (Tiffany's Analysis)
+
+### How are SSI associated with ASA level?
+
+Tang pointed out that ASA is related to SSI, so we investigate that trend in our data here.
+
+```{r asa-vs-ssi }
+asa_analysis = tidy_colectomies %>% 
+  select(any_ssi, asa_class_id, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace) %>% 
+  mutate(ssi_type = ifelse(
+           postop_ssi_super == 1, "Super",
+           ifelse(postop_ssi_deep == 1, "Deep", 
+                  ifelse(postop_ssi_organspace == 1, "OrganSpace", "None")
+         ))) %>%
+  rename(., ASA = asa_class_id) %>% 
+  filter(!is.na(ASA)) %>% 
+  group_by(ASA) %>% 
+  summarize(n = n(), 
+            n_SSIs = sum(any_ssi),
+            percent_SSIs = n_SSIs/n)
+
+knitr::kable(asa_analysis)
+```
+
+```{r, number-asa-ids }
+ggplot(data = asa_analysis, aes(x = ASA, y = n, fill = ASA)) +
+  geom_bar(stat = "identity")
+```
+
+The majority of cases are class 1, the least severe. The second most common is level 3, indicating that there are generally benign colectomies with a handful that are more serious. Now, we'll look at how SSIs occur as a function of ASA level.
+
+```{r ssi-vs-asa-plot }
+ggplot(data = asa_analysis, aes(x = ASA, y = percent_SSIs, fill = ASA)) +
+  geom_bar(stat = "identity")
+```
+
+We see that there is also an increasing trend in surgical site infections as the ASA severity gets higher. Thus, we've shown that as a colectomy's severity increases, the patient is slightly more likely to get an infection after their surgery.
 
 <h1 id="regress">Regression Analysis</h1>
+
+
 
 <h1 id="conclusion">Conclusion</h1>
 

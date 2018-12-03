@@ -119,41 +119,111 @@ insurance_df = tidy_colectomies %>%
   filter(!is.na(insurance_payment_type)) %>% 
   group_by(insurance_payment_type) %>% 
   summarize(n = n(),
-            total_SSI = sum(any_ssi))
+            total_SSI = sum(any_ssi),
+            percent_SSI = total_SSI / n)
 
 knitr::kable(insurance_df)
 ```
 
-| insurance\_payment\_type |     n|  total\_SSI|
-|:-------------------------|-----:|-----------:|
-| 1                        |  3007|         244|
-| 2                        |  2229|         185|
-| 3                        |   533|          65|
-| 4                        |   444|          49|
-| 5                        |  1791|         142|
-| 6                        |    17|           4|
-| 7                        |     2|           0|
-| 8                        |   136|          15|
-| 9                        |  2252|         198|
-| 10                       |   372|          23|
-| 11                       |    72|          10|
+| insurance\_payment\_type |     n|  total\_SSI|  percent\_SSI|
+|:-------------------------|-----:|-----------:|-------------:|
+| 1                        |  3007|         244|     0.0811440|
+| 2                        |  2229|         185|     0.0829969|
+| 3                        |   533|          65|     0.1219512|
+| 4                        |   444|          49|     0.1103604|
+| 5                        |  1791|         142|     0.0792853|
+| 6                        |    17|           4|     0.2352941|
+| 7                        |     2|           0|     0.0000000|
+| 8                        |   136|          15|     0.1102941|
+| 9                        |  2252|         198|     0.0879218|
+| 10                       |   372|          23|     0.0618280|
+| 11                       |    72|          10|     0.1388889|
 
-#### Insurance Types and SSI Plot
+We can see in the table that insurance types are not evenly distributed over the data. Thus, we need to compare percentages of colectomies that resulted in SSI instead of raw counts.
 
 ``` r
-# ggplot(data = insurance_df,
-#                         aes(x = insurance_payment_type,
-#                             y = ssi,
-#                             fill = insurance_payment_type)) +
-#   geom_bar(stat = "identity") +
-#   theme_bw() +
-#   labs(
-#     x = "Insurance Payment Type",
-#     y = "SSI",
-#     title = "Insurance Types and SSI",
-#     fill = ""
-#   ) 
+ggplot(data = insurance_df,
+       aes(x = insurance_payment_type,
+           y = percent_SSI,
+           fill = insurance_payment_type)) +
+  geom_bar(stat = "identity") +
+  labs(
+    x = "Insurance Payment Type",
+    y = "Percent of colecotmies resulting in SSI",
+    title = "Insurance Types and SSI"
+  ) + 
+  theme(legend.position = "none")
 ```
+
+<img src="report_files/figure-markdown_github/insurance_plot-1.png" width="90%" />
+
+The insurance payment types are as follows:
+1. Medicare
+2. Medicare + Medicare Supplemental Plan/Medigap Insurance
+3. Medicaid
+4. Medicare AND Medicaid
+5. Blue Cross Blue Shield of Michigan (BCBSM)
+6. Private Insurance, incl. HMO plans
+7. Other
+8. Self-Pay
+9. Uninsured
+10. International Patient
+11. Medicare Advantage - Blue Cross Blue Shield of Michigan
+
+In the first table, we can see that the most occurences of SSIs are in patients with Medicare, Medicare + Medicare Supplemental Plan/Medigap Insurance, or those who are uninsured. However, those variables also had the greatest number of patients, so we can't solely rely on the absolute SSI counts to tell us anything useful. We must look at the percentages instead.
+
+In the second plot, we can see the percentage of SSI occurences out of the total number of colectomies performed based on insurance type. There is generally no distinction between the insurance types, with most of the percentages hovering between 6 to 12 percent. Noticeably, patients with private insurance had a much higher percentage of SSIs at above 25 percent while patients with other insurance had 0 percent. However, this is most likely due to the small sample size of patients with those types of insurance and should not affect our conclusions.
+
+In the end, it seems that there is no relationship between insurance type and occurence of SSIs.
+
+### How are SSI distributed in patients with different diseases and prior conditions? (Tiffany's Analysis)
+
+### How are SSI associated with ASA level?
+
+Tang pointed out that ASA is related to SSI, so we investigate that trend in our data here.
+
+``` r
+asa_analysis = tidy_colectomies %>% 
+  select(any_ssi, asa_class_id, postop_ssi_super, postop_ssi_deep, postop_ssi_organspace) %>% 
+  mutate(ssi_type = ifelse(
+           postop_ssi_super == 1, "Super",
+           ifelse(postop_ssi_deep == 1, "Deep", 
+                  ifelse(postop_ssi_organspace == 1, "OrganSpace", "None")
+         ))) %>%
+  rename(., ASA = asa_class_id) %>% 
+  filter(!is.na(ASA)) %>% 
+  group_by(ASA) %>% 
+  summarize(n = n(), 
+            n_SSIs = sum(any_ssi),
+            percent_SSIs = n_SSIs/n)
+
+knitr::kable(asa_analysis)
+```
+
+| ASA |     n|  n\_SSIs|  percent\_SSIs|
+|:----|-----:|--------:|--------------:|
+| 1   |  7947|      616|      0.0775135|
+| 2   |   297|       33|      0.1111111|
+| 3   |  2341|      246|      0.1050833|
+| 4   |   272|       41|      0.1507353|
+
+``` r
+ggplot(data = asa_analysis, aes(x = ASA, y = n, fill = ASA)) +
+  geom_bar(stat = "identity")
+```
+
+<img src="report_files/figure-markdown_github/number-asa-ids-1.png" width="90%" />
+
+The majority of cases are class 1, the least severe. The second most common is level 3, indicating that there are generally benign colectomies with a handful that are more serious. Now, we'll look at how SSIs occur as a function of ASA level.
+
+``` r
+ggplot(data = asa_analysis, aes(x = ASA, y = percent_SSIs, fill = ASA)) +
+  geom_bar(stat = "identity")
+```
+
+<img src="report_files/figure-markdown_github/ssi-vs-asa-plot-1.png" width="90%" />
+
+We see that there is also an increasing trend in surgical site infections as the ASA severity gets higher. Thus, we've shown that as a colectomy's severity increases, the patient is slightly more likely to get an infection after their surgery.
 
 <h1 id="regress">
 Regression Analysis
