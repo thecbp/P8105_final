@@ -27,10 +27,10 @@ diabetes. All variables are converted to binary for this analysis and NA
 entries are set to 0, indicating that the patient does not have this
 condition.
 
-### Understanding our dataset
+#### Understanding our dataset
 
 We’ll take a look at the number of cases for each health condition
-available in our dataset as well as the number of death and SSI levels.
+available in our dataset.
 
 ``` r
 dist_healthdisease = healthdisease %>% 
@@ -49,15 +49,33 @@ dist_healthdisease = healthdisease %>%
 
 ggplot(dist_healthdisease, aes(x = condition, y = cases, fill = condition)) +
   geom_bar(stat = "identity") + ggtitle("Pre-operative health conditions") +
-  theme_classic() + theme(axis.text.x = element_text(angle = 40, hjust = 1), legend.position="none")
+  theme_classic() + theme(axis.text.x = element_text(angle = 40, hjust = 1), legend.position="none") 
 ```
 
 ![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-### SSI and death association
+#### SSI outcome associated with the number of prior conditions
+
+In our dataset, we have SSI 0, 1, and 2, with 0 indicating no surgical
+site infection. We see a positive correlation between number of
+pre-operative health conditions and the resulting number of surgical
+site infection.
 
 ``` r
-heatplot3 = healthdisease %>% 
+num_health = healthdisease %>% 
+  select(-postop_ssi_super, -postop_ssi_deep, -postop_ssi_organspace, -death) %>%
+  mutate(total = pmap_dbl(select(., -any_ssi, -surgical_approach), sum))
+
+ggplot(num_health, aes(x = total, y = any_ssi)) + geom_smooth() + 
+  theme_classic() + ggtitle("Number of prior health conditions vs SSI")
+```
+
+![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+#### SSI and death association to each health condition
+
+``` r
+heatplot = healthdisease %>% 
   select(-postop_ssi_super, -postop_ssi_deep, -postop_ssi_organspace, 
          -surgical_approach) %>%
   mutate(death = recode(death, `3` = "No death", `1` = "Died intraop", 
@@ -69,10 +87,8 @@ heatplot3 = healthdisease %>%
   select(-key) %>% group_by(status, condition) %>% 
   summarise(score = sum(score)) 
 
-ggplot(heatplot3, mapping = aes(x = status, y = condition, fill = score)) + 
+ggplot(heatplot, mapping = aes(x = status, y = condition, fill = score)) + 
   geom_tile() + scale_fill_viridis() + theme_classic()
 ```
 
-![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
-
-### Outcome associated to number of prior conditions
+![](tiff_subanalysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
