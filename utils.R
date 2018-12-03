@@ -60,6 +60,54 @@ prettify_names = function(df) {
   return(new_df)
 }
 
+# Function to help assure columns are of the correct type
+catfactory = function(df) {
+  new_df = df %>% 
+    mutate(
+      cohort = as.factor(cohort),
+      admission_source = as.factor(admission_source),
+      discharge_destination = as.factor(discharge_destination),
+      still_in_hospital = as.logical(still_in_hospital),
+      surg_priority_status = as.factor(surg_priority_status),
+      insurance_payment_type = as.factor(insurance_payment_type),
+      race = as.factor(race),
+      sex = as.factor(sex),
+      is_hispanic = as.factor(is_hispanic),
+      had_ascites = as.logical(had_ascites),
+      had_bleeding_disorder = as.logical(had_bleeding_disorder),
+      had_body_weight_loss = as.logical(had_body_weight_loss),
+      had_chf = as.logical(had_chf),
+      had_chronic_cond = as.logical(had_chronic_cond),
+      had_copd = as.logical(had_copd),
+      had_c_artery_prob = as.logical(had_c_artery_prob),
+      had_diabetes = as.logical(had_diabetes),
+      is_on_dialysis = as.logical(is_on_dialysis),
+      had_dis_cancer = as.logical(had_dis_cancer),
+      had_dvt = as.logical(had_dvt),
+      had_etoh = as.logical(had_etoh),
+      functional_status = as.factor(functional_status),
+      had_hypertension = as.logical(had_hypertension),
+      had_open_wound = as.logical(had_open_wound),
+      had_pvd = as.logical(had_pvd),
+      had_pneumonia = as.logical(had_pneumonia),
+      had_preop_sepsis = as.logical(had_preop_sepsis),
+      had_preop_transfusion = as.logical(had_preop_transfusion),
+      had_sleep_apnea = as.logical(had_sleep_apnea),
+      is_smoker = as.logical(is_smoker),
+      is_on_ventilator = as.logical(is_on_ventilator),
+      is_on_beta_blocker = as.logical(is_on_beta_blocker),
+      presence_drains = as.factor(presence_drains),
+      surgical_approach = as.factor(surgical_approach),
+      asa_class_id = as.factor(presence_drains),
+      had_epidural = as.logical(had_epidural),
+      had_cathether = as.logical(had_cathether),
+      nerve_block = as.logical(nerve_block),
+      on_anticoag = as.factor(on_anticoag),
+      had_scd = as.logical(had_scd)
+    )
+  return(new_df)
+}
+
 # The _states variables are for use in the Shiny application
 patient_states_util = c(
   "Age" = "age",

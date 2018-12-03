@@ -1,6 +1,5 @@
 ---
 title: "Report Rough Draft"
-date: "11/19/2018"
 output: github_document
 ---
 
@@ -14,13 +13,11 @@ Given this, we wanted to investigate what factors contributed to increasing or d
 
 # Data Characterization
 
-Before we start our analyses, it's important for us to understand our data in its original form.
+Before anything else, we need to bring in the data and our toolkit for analyzing the data. In addition to `tidyverse`, we've created a set of helper functions and variables that we've stored in `utils.R` to save coding space. Our data will be stored in the `colectomies` variable.
 
-## Libraries and settings
-
-```{r lib-imports, message = FALSE }
-# Our data analysis toolkit
+```{r setup, message = FALSE, warning = FALSE }
 library(tidyverse)
+library(haven)
 source("./utils.R")
 
 # Formatting plot output
@@ -32,50 +29,43 @@ knitr::opts_chunk$set(
 theme_set(theme_classic() + 
             theme(legend.position = "bottom", 
                   plot.title = element_text(hjust = 0.5)))
+
+# Raw data
+colectomies = read_dta(file = './colectomy_raw_new.dta') 
 ```
 
-Our raw data is contained in `procedure10.csv`, so we'll bring it in and have a look at its size. 
+Before we start our analyses, it's important for us to understand our data in its original form. In its raw form, the data has `r nrow(colectomies)` rows and `r ncol(colectomies)` columns. Each row in this dataset corresponds to a single colectomy with an incredible amount of information associated with it. The data has already been purged of identifiable personal information, leaving us with a bevy of laboratory, disease, surgery and patient data. 
 
-```{r data-import }
-colectomies = read.csv(file = './procedure10.csv') 
+That being said, many of the columns are useless for our analysis. Many columns contain mostly or only missing data, denoted by either blank cells or `NA` strings. Before we can start the variable selection for our model, we need to tidy up the dataset. 
 
-# TODO: Figure out how to grab data from specific URL (ie OneDrive)
-```
+# Tidying the Data
 
-In its raw form, `colectomies` has `r nrow(colectomies)` rows and `r ncol(colectomies)` columns. Each row in this dataset corresponds to a single colectomy with an incredible amount of information associated with it. The data has already been purged of identifiable personal information, leaving us with a bevy of laboratory, disease and patient data. 
-
-That being said, many of the columns are useless for regression analysis. Many columns are contain mostly or only missing data, denoted by blank cells or `NA`. Before we can start the variable selection for our model, we need to tidy up the dataset. 
-
-# Data Cleaning
+## Data Reduction & Cleaning
 
 To start the cleaning, we want to remove all columns that contain more than 50% missing values (either blank cells or `NA`). Furthermore, some of the columns actually contain duplicate information from others. These duplicate columns start with `flg` or `e`. 
 
 ```{r data-reduction }
-is_mostly_intact = function(col) {
-  # Account for literal NAs and blanks
-  missings = is.na(col) | col == "" | col == "NA"
-  return(sum(missings) <= (3084 / 2))
-}
-
 tidy_colectomies = colectomies %>% 
   select(-starts_with("flg_"), -starts_with("e_")) %>% 
   select_if(unlist(map(., is_mostly_intact), use.names = FALSE)) %>% 
-  prettify_names(.) %>% 
-  mutate(any_ssi =  (postop_ssi_super + postop_ssi_deep + 	postop_ssi_organspace) >= 1)
+  prettify_names(.) 
 ```
 
-After the removal of duplicate columns and columns with more than 50% missing data, `tidy_colectomies` comes to be `r nrow(tidy_colectomies)` rows and `r ncol(tidy_colectomies)` columns. 
+Our function, `is_mostly_intact`, helps us identify columns that are more than 50% missing or blank. `prettify_names` helps us mass-change the column names in the dataset in a succinct way, leaving variables that are more informative to code with. After this purge, our reduced dataset now stands at `r nrow(tidy_colectomies)` rows and `r ncol(tidy_colectomies)` columns. 
 
-Many of the columns have uninuitive or non-descriptive names, so change these up to reflect the information they convey. There are too many columns to rename inline, so we created a function `prettyify_names` in `utils.R` to do it compactly in this report. 
+## Data Cleaning
 
+Many of the columns in the data appear to be numerical, but are in fact, categorical. We've created a function `catfactory` in `utils.R` to contain all the particular details on which variables needed coercing. 
 
+In our dataset, the outcome of interest we'll be focusing on is surgical site infection (SSI). We believe that focusing on this aspect of post-operation allows us to narrow down the scope of our analysis, while allowing for the greatest breadth for defining "complication". Surgical site infection is actually contained in 3 particular columns (`postop_ssi_super`,  `postop_ssi_deep` and `postop_ssi_organspace`) in the dataset, which we'll compile into one summary variable `any_ssi`.
 
-# For checking current dataset in Excel (not include in report)
-
-```{r}
-# Sanity check the current
-write.csv(tidy_colectomies, file = "./test.csv")
+```{r data-cleaning }
+tidy_colectomies = tidy_colectomies %>%
+  catfactory(.) %>% 
+  mutate(any_ssi = (postop_ssi_super + postop_ssi_deep + 	postop_ssi_organspace) >= 1)
 ```
+
 
 # References
 
+1. https://www.medscape.org/viewarticle/711126
