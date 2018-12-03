@@ -6,11 +6,11 @@ output: github_document
 
 # Introduction 
 
-...
+Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer to just being preventative. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years.[1](https://www.medscape.org/viewarticle/711126)
 
 ## Project Motivation
 
-...
+Given this, we wanted to investigate what factors contributed to increasing or decreasing the risk of post-operative complication. We have a dataset on colectomies performed from 2014 - 2016 from multiple hospitals in Michigan. Each row in the dataset represents a single colectomy and a multitude of other information concerning the surgery and the patient. Using this data, we plan to do a regression analysis to figure out which variables have an impact on affecting post-surgery complication.  
 
 # Data Characterization
 
@@ -77,5 +77,5 @@ Many of the columns have uninuitive or non-descriptive names, so change these up
 write.csv(tidy_colectomies, file = "./test.csv")
 ```
 
-
+# References
 
