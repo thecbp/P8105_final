@@ -259,7 +259,9 @@ mean(fit_mort30$residuals^2)
 #RMSE=0.21, Rsquared=0.1 - bad % variantion acconted for
 ```
 
+According to Johns Hopkins School of Medicine's post on surgical site infections (ssi), we look at several potential predictor variables such as Being an elderly adult, being overweight, being a diabetic. smoking status, and cancer status[3]. We further checked the statement and almost all the predictors are significant under 1% significance level except diabetes status, wound closure, surgical approach, and hypertension. However, we include all the predictors in our predictor model for better clinical implications.
 
+This regression results give the clinical professionals a detailed look at what pre-surgical disease/traits contribute to ssi. Also, it gives patients more information to decide between different options they are given by the doctors.
 
 
 
@@ -280,8 +282,7 @@ Reference
 1. Wikipedia: ASA physical status classification system
 2. http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
 3. http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/
-
-1. https://www.medscape.org/viewarticle/711126
-2. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382
-3. https://www.ncbi.nlm.nih.gov/pubmed/27765178
-4. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004
+4. https://www.medscape.org/viewarticle/711126
+5. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382
+6. https://www.ncbi.nlm.nih.gov/pubmed/27765178
+7. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004
