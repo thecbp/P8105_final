@@ -167,12 +167,80 @@ In the end, our hypotheses was incorrect; there was seemingly no relationship be
 
 ### How are SSI distributed in patients with different diseases and prior conditions? (Tiffany's Analysis)
 
-The Ko paper names multiple diseases that are associated with increased risk of SSI. Our dataset contains information on many of these diseases, so we wanted to investigate if our data supports any of Ko's findings. 
+The Ko paper names multiple diseases that are associated with increased risk of SSI. Our dataset contains information on many of these diseases, so we wanted to investigate if our data supports any of Ko's findings. We have the following data below that corresponds to the paper:
 
+  * Smoker: Tobacco use within 1 year
+  * Etoh: >2 drinks/day two weeks prior to surgery
+  * Body Weight Loss: 10% of body weight loss 6 months prior to surgery
+  * Chf: Congestive Heart Failure within 30 days prior to surgery
+  * Scd : Specific Carbohydrate Diet
+  * Copd: Chronic Obstructive Pulmonary Disease
+  * Dvt: Deep Vein Thrombosis
+  * Chronic Condition: steriods, immunosuppresive meds
+  * Preop-transfusion: RBCs within 72 hours of surgery
+  * Ventilator: ventilator dependent
 
+```{r gathering-diseases, include = FALSE }
+healthdisease = tidy_colectomies %>% 
+  select(any_ssi, death_status, had_ascites, had_bleeding_disorder, had_body_weight_loss, 
+         had_chf, had_copd, had_chronic_cond, had_c_artery_prob,
+         had_diabetes, is_on_dialysis, had_dis_cancer, had_dvt,
+         had_hypertension, had_pvd, had_pneumonia, had_preop_sepsis, had_preop_transfusion,
+         had_sleep_apnea, is_smoker, had_etoh, is_on_ventilator, is_on_beta_blocker, 
+         heparinbid, heparintid, had_scd, surgical_approach) %>% 
+  select(-surgical_approach) %>% 
+  mutate(had_ascites = ifelse(had_ascites == 2, 1, 0),
+         had_preop_sepsis = ifelse(had_preop_sepsis == 1, 0, 1), 
+         had_sleep_apnea = ifelse(had_sleep_apnea == 0, 0, 1)) %>%
+  replace_na(list(had_dvt = 0, had_dis_cancer = 0, is_on_beta_blocker = 0, had_scd = 0,
+                  heparinbid = 0, heparintid = 0))
+```
 
+```{r plotting-disease, warning = FALSE}
+dist_data = healthdisease %>% 
+  select(-any_ssi, -death_status) %>% 
+  gather(condition, key) %>% 
+  filter(key > 0) %>% 
+  group_by(condition) %>% 
+  summarize(cases = n()) %>% 
+  mutate(condition = reorder(condition, -cases))
 
+ggplot(dist_data, aes(x = condition, y = cases, fill = condition)) +
+  geom_bar(stat = "identity") + 
+  labs(
+    title = "Pre-operative health conditions",
+    x = "Diseases/Conditions",
+    y = "Counts"
+  ) +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1), 
+        legend.position = "none") 
+```
 
+We can see in the dataset that many of these conditions/diseases are relatively rare in the dataset. This may impact their significance in the regression, but we've established that there are patients with these characteristics.
+
+#### SSI and death association to each health condition
+
+To see how often a condition is related to SSI, we used a heatmap to see if any are particularly associated with SSI. We also looked at death as an outcome to see if any of these diseases are associated with it.
+
+```{r givin-the-heat }
+heatplot = healthdisease %>% 
+  mutate(death_status = recode(death_status, `3` = "No death", `1` = "Died intraop", 
+                        `2` = "Died within 30 days postop")) %>%
+  na.omit() %>% 
+  gather(condition, score, -death_status, -any_ssi) %>%
+  gather(key, status, -condition, -score) %>% 
+  select(-key) %>% group_by(status, condition) %>% 
+  summarise(score = sum(score))
+
+ggplot(data = heatplot, aes(x = status, y = condition, fill = score)) + 
+  geom_tile() + 
+  scale_fill_distiller(palette = "RdYlBu") +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1), 
+        legend.position = "none") +
+  labs
+```
+
+Comparing number of death and SSI cases side by side with each health condition, we see a nearly symmetric heatmap. There are fewer cases under patients that actually got SSI (TRUE/FALSE) or died from the operation, so it is difficult to conclude any direct relationship between health condition and surgery outcome. Intrestingly, we can see that there are a great number of successful cases for patients with sleep apnea, specific carbohydrate diet, and hypertension related ot SSI. 
 
 ### How are SSI associated with ASA level?
 

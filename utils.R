@@ -66,7 +66,6 @@ catfactory = function(df) {
     mutate(
       site_cid_160801 = factor(site_cid_160801),
       cohort = as.factor(cohort),
-      death_status = as.factor(death_status),
       admission_source = as.factor(admission_source),
       discharge_destination = as.factor(discharge_destination),
       still_in_hospital = as.logical(still_in_hospital),
