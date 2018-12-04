@@ -13,6 +13,7 @@ Table of Contents
 -   <a href="#sub">Subanalyses</a>
 -   <a href="#regress">Regression Analysis</a>
 -   <a href="#conclusion">Discussion</a>
+-   <a href="#changes">Changes Mid-Report</a>
 -   <a href="#refs">References</a>
 
 ------------------------------------------------------------------------
@@ -27,26 +28,26 @@ Table of Contents
 <h1 id="intro">
 Introduction
 </h1>
-Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer to just being preventative. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years<sup>[1](https://www.medscape.org/viewarticle/711126)</sup>.
+Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years<sup>[1](https://www.medscape.org/viewarticle/711126)</sup>.
 
 Project Motivation
 ------------------
 
-We wanted to investigate what factors contributed to increasing or decreasing the risk of post-operative complication, using a dataset on colectomies performed from 2014 - 2016 from multiple hospitals in Michigan. Using this data, we want to use this data for a regression analysis to figure out which variables have an impact on affecting post-surgery complication.
+We wanted to investigate what factors contribute to increasing or decreasing the risk of post-operative complication using a dataset on colectomies performed from 2014 - 2016 from multiple hospitals in Michigan. Using this data, we want to perform a regression analysis to figure out which variables have an impact on affecting post-surgery complication.
 
-We were inspired by the analyses done for Homework 6. Until then, our studies have only ever focused on simple linear regression, so being able to wield something to predict a binary outcome was new. With the binary nature of complication, we thought we could apply the same analyses here to good effect.
+We were inspired by the analyses done for Homework 6. Until then, our studies have only ever been focused on simple linear regression, so being able to wield something to predict a binary outcome was exciting. With the binary nature of complication, we thought we could apply the same analyses here to good use.
 
-Initial Questions
------------------
+Project Roadmap
+---------------
 
 First, we needed to figure out if any other answers have been given for this question. If risk factors have already been established, then theoretically they should contribute significantly to a regression. We also needed to figure out what our outcome could be, since complication after a surgery can take many forms.
 
-We ended up deciding to use surgical site infection as our outcome of interest. After some exploring, we found that there was more literature dedicated to this particular outcome compared to another such as mortality. While we knew that making our own logistic regression would have been easy, we were also interested in creating a modelling application for others. It would be interesting to give interested users a subset of the data to create their own models, based on variables that they might find useful or that we may have not considered. This interest motivated us to create a Shiny application dedicated to this process.
+We ended up deciding to use surgical site infection as our outcome of interest. While we knew that making our own logistic regression would have been easy, we were also interested in creating a modelling application for others. This application would enable interested users to use a subset of the data to create their own models, based on variables that they might find useful or that we may have not considered.
 
 <h1 id="characterize">
 Data Characterization
 </h1>
-Before anything, we need to bring in the data and our toolkit for analyzing the data. In addition to `tidyverse`, we've created a set of helper functions and variables that we've stored in `utils.R` to save coding space. Our data will be stored in the `colectomies` variable. `leaps` and `caret` are used later for our regression analyses.
+In addition to `tidyverse`, we've created a set of helper functions and variables that we've stored in `utils.R` to save coding space. Our data will be stored in the `colectomies` variable. `leaps` and `caret` are used later for our regression analyses.
 
 ``` r
 library(caret)
@@ -66,10 +67,10 @@ theme_set(theme_classic() +
                   plot.title = element_text(hjust = 0.5)))
 
 # Raw data
-colectomies = read_dta(file = './colectomy_raw_new.dta') 
+colectomies = read_dta(file = './data/colectomy_raw_new.dta') 
 ```
 
-In its raw form, the data has 10868 rows and 992 columns. Each row corresponds to a single colectomy and an incredible amount of information associated with it, including a bevy of laboratory, disease, surgery and patient data.
+In its raw form, the data has 10868 rows and 992 columns. Each row corresponds to a single colectomy and an incredible amount of information, including a bevy of laboratory, disease, surgery and patient data.
 
 A brief glance at the data showed us that many of the columns are useless for our analysis. Many columns contain mostly or only missing data. Before we can start variable selection for our model, we need to tidy up the dataset.
 
@@ -93,7 +94,7 @@ Our function, `is_mostly_intact`, helps us identify columns that are more than 5
 Data Cleaning
 -------------
 
-Many of the columns in the data appear to be numerical, but are in fact, categorical. Our `catfactory` function in `utils.R` contain all of our retyping.
+Many of the columns in the data appear to be numerical, but are in fact, categorical. Our `catfactory` function in `utils.R` contains all of our retyping code.
 
 ``` r
 tidy_colectomies = tidy_colectomies %>%
@@ -103,9 +104,9 @@ tidy_colectomies = tidy_colectomies %>%
 
 The outcome of interest we'll be focusing on is surgical site infection (SSI). After researching more into colectomies, we found that infection was the most common type of complication. We believe that focusing on this aspect of post-operation allows us to narrow down the scope of our analysis, while allowing for the greatest breadth for defining "complication".
 
-Surgical site infection (SSI) is actually contained in 3 particular columns (`postop_ssi_super`, `postop_ssi_deep` and `postop_ssi_organspace`) in the dataset, which we'll compile into one summary variable `any_ssi`.
+Surgical site infection (SSI) is contained in 3 particular columns (`postop_ssi_super`, `postop_ssi_deep` and `postop_ssi_organspace`) in the dataset, which we'll compile into one summary variable `any_ssi`.
 
-Even with all of the data reduction, there are still too many variables to know which to include in the regression. In aid in variable selection, we did a literature review to see what has relationships have been established.
+Even with all of the data reduction, there are still too many variables to know which to include in the regression. To aid in variable selection, we did a literature review to see what has relationships have been established.
 
 <h1 id="lit">
 Literature Review: Relevant Factors
@@ -337,6 +338,13 @@ We are pleased to see that many of the variables that we found during our litera
 Looking at the model coefficients, we can comment on how each factor affects the odds of SSI. High BMI, admission to the ICU, ASA class 3, being a smoker and long surgery times have positive coefficients, meaning that the odds of SSI in patients with these characteristics are higher than those without. Older patients, length of stay and surgical approaches 2 and 3 correspond with negative coefficients, indicating that odds of SSI are reduced in patients with these qualities.
 
 Although far from perfect, our model gives us some insight into what pre-surgical disease/traits contribute to SSI and supports some of the research done on this particular subject. We believe that our results can be improved by starting with more parsimonious models and building the stepwise regression from there.
+
+<h1 id="changes">
+Changes Mid-Report
+</h1>
+During the course of the project, we were unsure whether we should use SSI or death as an outcome. As we started wrangling with the data and reviewing the literature, we realized that more research has been done on SSI. Furthermore, we also found out that death due to colectomy was a rare outcome. These two factors led us to focus on SSI in the subanalyses and regression.
+
+One particularly contentious issue for our project was actually our Shiny application. Given that we had data from multiple hospitals in Michigan, we wanted to create a tool to recommend hospitals to patients given some location data. However, we quickly ran into a roadblock: there was no location information in our dataset. Since we were doing a regression analysis, we decided to opt for a more educational tool instead. Now our Shiny app just allows a user to create their own regression tool and see what the results are.
 
 <h1 id="refs">
 References
