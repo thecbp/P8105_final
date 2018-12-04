@@ -1,0 +1,12 @@
+name: shiny
+title:
+username:
+account: cbpascual
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 603242
+bundleId: 1739735
+url: https://cbpascual.shinyapps.io/shiny/
+when: 1543940456.41321
+asMultiple: FALSE
+asStatic: FALSE

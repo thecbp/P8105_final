@@ -5,13 +5,9 @@ library(shiny)
 library(shinyWidgets)
 library(tidyverse)
 
-source("../utils.R")
+source("./utils.R")
 
-colectomies = read.csv(file = '../procedure10.csv')  %>% 
-  select(-starts_with("flg_"), -starts_with("e_")) %>% 
-  select_if(unlist(map(., is_mostly_intact), use.names = FALSE)) %>% 
-  prettify_names(.) %>% 
-  mutate(any_ssi = factor((postop_ssi_super + postop_ssi_deep + postop_ssi_organspace) >= 1))
+colectomies = read.csv(file = './sample_colectomies.csv') 
 
 ui = fluidPage(
   
