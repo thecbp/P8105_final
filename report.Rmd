@@ -13,7 +13,7 @@ output: github_document
 * <a href="#lit">Literature Review</a>
 * <a href="#sub">Subanalyses</a>
 * <a href="#regress">Regression Analysis</a>
-* <a href="#conclusion">Conclusion</a>
+* <a href="#conclusion">Discussion</a>
 * <a href="#refs">References</a>
 
 ---
@@ -31,14 +31,24 @@ Colectomies are surgical procedures that remove all of part of your large intest
 
 ## Project Motivation
 
-Given this, we wanted to investigate what factors contributed to increasing or decreasing the risk of post-operative complication. We have a dataset on colectomies performed from 2014 - 2016 from multiple hospitals in Michigan. Each row in the dataset represents a single colectomy and a multitude of other information concerning the surgery and the patient. Using this data, we plan to do a regression analysis to figure out which variables have an impact on affecting post-surgery complication.  
+We wanted to investigate what factors contributed to increasing or decreasing the risk of post-operative complication, using a dataset on colectomies performed from 2014 - 2016 from multiple hospitals in Michigan. Using this data, we want to use this data for a regression analysis to figure out which variables have an impact on affecting post-surgery complication. 
+
+We were inspired by the analyses done for Homework 6. Until then, our studies have only ever focused on simple linear regression, so being able to wield something to predict a binary outcome was new. With the binary nature of complication, we thought we could apply the same analyses here to good effect.
+
+## Initial Questions
+
+First, we needed to figure out if any other answers have been given for this question. If risk factors have already been established, then theoretically they should contribute significantly to a regression. We also needed to figure out what our outcome could be, since complication after a surgery can take many forms. 
+
+We ended up deciding to use surgical site infection as our outcome of interest. After some exploring, we found that there was more literature dedicated to this particular outcome compared to another such as mortality. While we knew that making our own logistic regression would have been easy, we were also interested in creating a modelling application for others. It would be interesting to give interested users a subset of the data to create their own models, based on variables that they might find useful or that we may have not considered. This interest motivated us to create a Shiny application dedicated to this process.
 
 <h1 id="characterize">Data Characterization</h1>
 
-Before anything else, we need to bring in the data and our toolkit for analyzing the data. In addition to `tidyverse`, we've created a set of helper functions and variables that we've stored in `utils.R` to save coding space. Our data will be stored in the `colectomies` variable.
+Before anything, we need to bring in the data and our toolkit for analyzing the data. In addition to `tidyverse`, we've created a set of helper functions and variables that we've stored in `utils.R` to save coding space. Our data will be stored in the `colectomies` variable. `leaps` and `caret` are used later for our regression analyses.
 
 ```{r setup, message = FALSE, warning = FALSE }
+library(caret)
 library(tidyverse)
+library(leaps)
 library(haven)
 source("./utils.R")
 
@@ -56,9 +66,9 @@ theme_set(theme_classic() +
 colectomies = read_dta(file = './colectomy_raw_new.dta') 
 ```
 
-Before we start our analyses, it's important for us to understand our data in its original form. In its raw form, the data has `r nrow(colectomies)` rows and `r ncol(colectomies)` columns. Each row in this dataset corresponds to a single colectomy with an incredible amount of information associated with it. The data has already been purged of identifiable personal information, leaving us with a bevy of laboratory, disease, surgery and patient data. 
+In its raw form, the data has `r nrow(colectomies)` rows and `r ncol(colectomies)` columns. Each row corresponds to a single colectomy and an incredible amount of information associated with it, including a bevy of laboratory, disease, surgery and patient data. 
 
-That being said, many of the columns are useless for our analysis. Many columns contain mostly or only missing data, denoted by either blank cells or `NA` strings. Before we can start the variable selection for our model, we need to tidy up the dataset. 
+A brief glance at the data showed us that many of the columns are useless for our analysis. Many columns contain mostly or only missing data. Before we can start variable selection for our model, we need to tidy up the dataset. 
 
 <h1 id="tidying">Tidying the Data</h1>
 
@@ -77,15 +87,17 @@ Our function, `is_mostly_intact`, helps us identify columns that are more than 5
 
 ## Data Cleaning
 
-Many of the columns in the data appear to be numerical, but are in fact, categorical. We've created a function `catfactory` in `utils.R` to contain all the particular details on which variables needed coercing. 
+Many of the columns in the data appear to be numerical, but are in fact, categorical. Our `catfactory` function in `utils.R` contain all of our retyping. 
 
-In our dataset, the outcome of interest we'll be focusing on is surgical site infection (SSI). We believe that focusing on this aspect of post-operation allows us to narrow down the scope of our analysis, while allowing for the greatest breadth for defining "complication". Surgical site infection (SSI) is actually contained in 3 particular columns (`postop_ssi_super`,  `postop_ssi_deep` and `postop_ssi_organspace`) in the dataset, which we'll compile into one summary variable `any_ssi`.
-
-```{r data-cleaning }
+```{r data-cleaning, message = FALSE, warning = FALSE }
 tidy_colectomies = tidy_colectomies %>%
   catfactory(.) %>% 
   mutate(any_ssi = (postop_ssi_super + postop_ssi_deep + 	postop_ssi_organspace) >= 1)
 ```
+
+The outcome of interest we'll be focusing on is surgical site infection (SSI). After researching more into colectomies, we found that infection was the most common type of complication. We believe that focusing on this aspect of post-operation allows us to narrow down the scope of our analysis, while allowing for the greatest breadth for defining "complication". 
+
+Surgical site infection (SSI) is actually contained in 3 particular columns (`postop_ssi_super`,  `postop_ssi_deep` and `postop_ssi_organspace`) in the dataset, which we'll compile into one summary variable `any_ssi`.
 
 Even with all of the data reduction, there are still too many variables to know which to include in the regression. In aid in variable selection, we did a literature review to see what has relationships have been established. 
 
@@ -97,13 +109,13 @@ Ko et. al found that certain diseases were associated with increased risk of dea
 
 In another paper, Tang et. al focuses on risk factors associated with surgical site infection, our outcome of interest. Dr. Tang identified ASA score, blood transfusion, drainage use, and sex<sup>[4](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004)</sup>.
 
-With these papers in mind, we know that it would be useful to try to include these in our analyses should these data points appear in the dataset. We selected a few of these variables and others to explore more in our subanalyses below.
+With these papers in mind, we know to include these in our regression analyses. We selected a few of these variables and others to explore more in our subanalyses below.
 
 <h1 id="sub">Subanalyses</h1>
 
 ### Is there a relationship between SSI and insurance status?
 
-For this analysis, we wanted to see how SSI was related with insurance staus. We believed that patients with little to no coverage would be forced to go to less experienced hospitals and experience more SSI.
+One variable we thought would have a relationship to SSI was a patient's insurance status. We believed that patients with little to no coverage would be forced to go to less experienced hospitals and experience more SSI. To confirm or deny this belief, we looked at how SSIs were distributed by insurance staus. 
 
 ```{r insurance_analysis, warning = FALSE, message = FALSE }
 insurance_df = tidy_colectomies %>% 
@@ -151,13 +163,20 @@ In the first table, we can see that the most occurences of SSIs are in patients 
 
 In the second plot, we can see the percentage of SSI occurences out of the total number of colectomies performed based on insurance type. There is generally no distinction between the insurance types, with most of the percentages hovering between 6 to 12 percent. Noticeably, patients with private insurance had a much higher percentage of SSIs at above 25 percent while patients with other insurance had 0 percent. However, this is most likely due to the small sample size of patients with those types of insurance and should not affect our conclusions.
 
-In the end, it seems that there is no relationship between insurance type and occurence of SSIs.
+In the end, our hypotheses was incorrect; there was seemingly no relationship between insurance type and occurence of SSIs. This result indicates it would be a poor candidate for predicting SSI.
 
 ### How are SSI distributed in patients with different diseases and prior conditions? (Tiffany's Analysis)
 
+The Ko paper names multiple diseases that are associated with increased risk of SSI. Our dataset contains information on many of these diseases, so we wanted to investigate if our data supports any of Ko's findings. 
+
+
+
+
+
+
 ### How are SSI associated with ASA level?
 
-Tang pointed out that ASA is related to SSI, so we investigate that trend in our data here.
+Tang pointed out that ASA is related to SSI, so we investigate that trend in our data here. The ASA physical classification system is used to assess the fitness of patient fitness prior to surgery. The scale ranges from 1 to 6, where `1` is a healthy person and `6` is a brain-dead person. We would expect ASA to be associated with higher rates of SSI since patients on the higher scale have more severe systemic disease. 
 
 ```{r asa-vs-ssi }
 asa_analysis = tidy_colectomies %>% 
@@ -172,86 +191,94 @@ asa_analysis = tidy_colectomies %>%
   group_by(ASA) %>% 
   summarize(n = n(), 
             n_SSIs = sum(any_ssi),
-            percent_SSIs = n_SSIs/n)
-
-knitr::kable(asa_analysis)
+            percent_SSIs = n_SSIs/n) %>% 
+  ggplot(data = ., aes(x = ASA, y = n, fill = ASA)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Number of patients in each ASA level",
+    x = "ASA classification",
+    y = "Number of patients"
+  )
 ```
 
-```{r, number-asa-ids }
-ggplot(data = asa_analysis, aes(x = ASA, y = n, fill = ASA)) +
-  geom_bar(stat = "identity")
-```
-
-The majority of cases are class 1, the least severe. The second most common is level 3, indicating that there are generally benign colectomies with a handful that are more serious. Now, we'll look at how SSIs occur as a function of ASA level.
+The majority of cases are class 1, while the second most common is level 3. This is to be expected since colectomies are performed for a wide array of conditions. Now, we'll look at how SSIs occur as a function of ASA level.
 
 ```{r ssi-vs-asa-plot }
 ggplot(data = asa_analysis, aes(x = ASA, y = percent_SSIs, fill = ASA)) +
-  geom_bar(stat = "identity")
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Percent of cases in ASA level with SSI",
+    x = "ASA classification",
+    y = "Percentage of cases"
+  )
 ```
 
-We see that there is also an increasing trend in surgical site infections as the ASA severity gets higher. Thus, we've shown that as a colectomy's severity increases, the patient is slightly more likely to get an infection after their surgery.
+We see that there is also an increasing trend in surgical site infections as the ASA severity gets higher. The rate of SSI is 3 times higher in class 4 patients than in class 1 patients. Thus, we've shown that as a colectomy's severity increases, the patient is slightly more likely to get an infection after their surgery. ASA classification is something we should include in the analysis.
 
 <h1 id="regress">Regression Analysis</h1>
 
-With our literature review and personal exploration of the data, we have a set of variables to use for our logistic regression.
+With our literature review and personal exploration of the data, we have a set of variables to use for our logistic regression. With our literature review, we've decided to start with a subset of 20 variables. These candidate variables have been shown to be associated with SSI, so we'll use automatic procedures to further cut down on covariates and get to a more robust, parsimonious model.
 
-While several surgical approaches have demonstrated to be effective ways for treatment, there are still small percentages of deaths after the surgery mainly due to surgical site infections or due to a combination of other diseases. The surgical approach can be subdivided into several approaches, or into one of open, laparoscopic, and robotic category. Different surgical approaches will have a severe impact on the final outcome of the surgery, and is one of the topics studied in this project. A detailed analysis is presented below in the data prepocessing section.
+```{r sub-selection }
+# Selection of 20 candidate covariates for logistic regression
+model_covariates = tidy_colectomies %>% 
+  select(any_ssi, surgical_approach, had_etoh,
+         had_hypertension, had_diabetes, surgical_wound_closure, 
+         asa_class_id, is_smoker, bmi, age, sex, had_body_weight_loss,
+         had_dvt, had_open_wound, had_pneumonia, had_preop_sepsis,
+         had_preop_transfusion, had_epidural, admit_to_icu_postsurg, 
+         val_surgtime, length_of_stay) %>% 
+  na.omit(.)
 
-The surgical approaches are presented in the following histogram (Open, Laparo-scopic, Laparoscopic Hand-Assisted, Laparoscopic converted to open, Robotic, Robotic converted to open, Raparoscopic single port, and other, respectively):
+just_covariates = model_covariates %>% select(-any_ssi) %>% colnames(.)
 
-### Data Cleaning
-```{r data-cleaning }
-#Hospital Colectomy
-library(dummies)
+# Compactly create the full logistic model
+full_fmla = as.formula(
+  paste("any_ssi ~", paste(c(just_covariates), collapse = "+"))
+)
 
-raw_colectomy = read_dta("colectomy_raw_new.dta") # colectomies in report
+# Models to help guide the automatic procedures
+null = glm(any_ssi ~ 1, data = model_covariates, family = binomial())
+full = glm(full_fmla, data = model_covariates, family = binomial())
 
-# factorize asa level
-for(i in 1:10868){
-  if((colectomy$asa_class_id[i] == 3)||(colectomy$asa_class_id[i] == 4)||(colectomy$asa_class_id[i] == 5)){
-    colectomy$asa_class_id[i] = 1
-  } else {
-    colectomy$asa_class_id[i] = 0
-  }
-}
+# Stepwise regression to select best subset
+step.model = step(null, direction = 'both', scope = list(upper = full))
+```
 
-colectomy_model = cbind.data.frame(colectomy$flg_dead30, colectomy$flg_cmp_ssi_any, colectomy$surgical_approach, colectomy$surgical_priority, colectomy$hypertension, colectomy$e_diabetes, colectomy$e_surgical_wound_closure, colectomy$asa_class_id, colectomy$smoker, colectomy$val_bmi)
-colnames(colectomy_model) = c("flg_dead30", "any_ssi", "surgical_approach", "surgical_priority", "hypertension", "e_diabetes", "e_surgical_wound_closure", "asa_class_id", "smoker", "bmi")
 
-cor(colectomy_model)
+```{r sub-selection1 }
+
+
+# cor(colectomy_model) # need more succinct way to show this
 # all correlations are below 0.27
-## by mortality within 30 days
-for(i in 1:10868)
-  if(colectomy$cohort[i] == 1){
-    fit_mort30 <- glm(flg_dead30 ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id, data = colectomy_model)
-  }
-summary(fit_mort30)
 
-## by ssi
-for(i in 1:10868)
-  if(colectomy$cohort[i] == 1){
-    fit_ssi <- glm(any_ssi ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id, data = colectomy_model)
-  }
-summary(fit_ssi)
+fmla = any_ssi ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id
+
+fit_ssi = glm(fmla, data = model_data)
+
+# What does the model look like? 
+#poop poop
+
+
 
 
 # testing the model validation
-library(leaps)
-colectomy_model = na.omit(colectomy_model)
-leaps(x = colectomy_model[,3:10], y = colectomy_model[,1], nbest=2, method="Cp")
-#we are not getting rid of anything
+model_data = na.omit(model_data)
 
-library(caret)
+# rewrite 
+leaps(x = colectomy_model[,3:10], y = colectomy_model[,1], nbest=2, method="Cp")
+
+
 
 # Use 10-fold validation and create the training sets
 
-data_train<-trainControl(method="cv", number=5)
+data_train = trainControl(method = "cv", number = 10)
 
 # Fit the 4-variables model that we discussed in previous lectures
-model_caret<-train(flg_dead30 ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id, data=colectomy_model,
-                   trControl=data_train,
-                   method='glm',
-                   na.action=na.pass)
+cv_model = train(fmla, data = colecto,
+                   trControl = data_train,
+                   method = 'glm',
+                   na.action = na.pass)
   
 # Model predictions using 4 parts of the data for training 
 model_caret
@@ -259,6 +286,7 @@ mean(fit_mort30$residuals^2)
 #RMSE=0.21, Rsquared=0.1 - bad % variantion acconted for
 ```
 
+make some comments on the regression measures
 
 
 
@@ -271,7 +299,7 @@ mean(fit_mort30$residuals^2)
 
 
 
-<h1 id="conclusion">Conclusion</h1>
+<h1 id="conclusion">Discussion</h1>
 
 
 <h1 id="refs">References</h1>
