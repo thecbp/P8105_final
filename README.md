@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This collaborative repo contains the project code for Data Science's final project. 
+This collaborative repo contains the project code for Data Science's final project. We analyze colectomy data to look for factors that contribute to or decrease the risk of surgical site infection.
 
 ## Team Members
 
