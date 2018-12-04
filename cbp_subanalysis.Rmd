@@ -5,6 +5,50 @@ date: "11/23/2018"
 output: github_document
 ---
 
+```{r setup, message = FALSE, warning = FALSE }
+library(caret)
+library(tidyverse)
+library(leaps)
+library(haven)
+source("./utils.R")
+
+# Formatting plot output
+knitr::opts_chunk$set(
+  out.width = "90%"
+)
+
+# Set the plot design
+theme_set(theme_classic() + 
+            theme(legend.position = "bottom", 
+                  plot.title = element_text(hjust = 0.5)))
+
+# Raw data
+colectomies = read_dta(file = './colectomy_raw_new.dta') 
+
+tidy_colectomies = colectomies %>% 
+  select(-starts_with("flg_"), -starts_with("e_")) %>% 
+  select_if(unlist(map(., is_mostly_intact), use.names = FALSE)) %>% 
+  prettify_names(.) 
+
+tidy_colectomies = tidy_colectomies %>%
+  catfactory(.) %>% 
+  mutate(any_ssi = (postop_ssi_super + postop_ssi_deep + 	postop_ssi_organspace) >= 1)
+
+small = sample_n(tidy_colectomies, 1000)
+```
+
+
+```{r}
+write.csv(small, file = "./sample_colectomies.csv")
+```
+
+
+
+
+
+
+
+
 ```{r lib-imports, message = FALSE }
 # Our data analysis toolkit
 library(tidyverse)

@@ -18,11 +18,9 @@ The surgical approaches are presented in the following histogram (Open, Laparo-s
 ### Data Cleaning
 ```{r}
 #Hospital Colectomy
-getOption("device")
-
 library(dummies)
 library(haven)
-raw_colectomy = read_dta("colectomy_raw_new.dta/colectomy_raw_new.dta")
+raw_colectomy = read_dta("colectomy_raw_new.dta")
 n=nrow(raw_colectomy)
 
 # Cases in each hospital somewhat unbalanced: from 1 to 478.
@@ -73,10 +71,10 @@ for(i in 1:ncol(colectomy)){
 }
 table(colectomy.var) #554 variables removed.
 #colnames(colectomy)[!colectomy.var] #Name of variables removed.
-colectomy=colectomy[,colectomy.var]
+colectomy = colectomy[,colectomy.var]
 
 # factorize diabetes
-for(i in 1:nrow(colectomy)){
+for(i in 1:10868){
   if((colectomy$diabetes[i] == 2)||(colectomy$diabetes[i] == 3)||(colectomy$diabetes[i] == 4)){
     colectomy$diabetes[i] = 1
   } else {
@@ -84,15 +82,13 @@ for(i in 1:nrow(colectomy)){
   }
 }
 # factorize asa level
-for(i in 1:nrow(colectomy)){
+for(i in 1:10868){
   if((colectomy$asa_class_id[i] == 3)||(colectomy$asa_class_id[i] == 4)||(colectomy$asa_class_id[i] == 5)){
     colectomy$asa_class_id[i] = 1
   } else {
     colectomy$asa_class_id[i] = 0
   }
 }
-
-
 
 colectomy_model = cbind.data.frame(colectomy$flg_dead30, colectomy$flg_cmp_ssi_any, colectomy$surgical_approach, colectomy$surgical_priority, colectomy$hypertension, colectomy$e_diabetes, colectomy$e_surgical_wound_closure, colectomy$asa_class_id, colectomy$smoker, colectomy$val_bmi)
 colnames(colectomy_model) = c("flg_dead30", "any_ssi", "surgical_approach", "surgical_priority", "hypertension", "e_diabetes", "e_surgical_wound_closure", "asa_class_id", "smoker", "bmi")
@@ -139,3 +135,5 @@ mean(fit_mort30$residuals^2)
 ```
 Reference
 1. Wikipedia: ASA physical status classification system
+2. http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
+3. http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/

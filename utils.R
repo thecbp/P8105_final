@@ -64,11 +64,14 @@ prettify_names = function(df) {
 catfactory = function(df) {
   new_df = df %>% 
     mutate(
+      site_cid_160801 = factor(site_cid_160801),
       cohort = as.factor(cohort),
+      death_status = as.factor(death_status),
       admission_source = as.factor(admission_source),
       discharge_destination = as.factor(discharge_destination),
       still_in_hospital = as.logical(still_in_hospital),
       surg_priority_status = as.factor(surg_priority_status),
+      surgical_wound_closure = as.factor(surgical_wound_closure),
       insurance_payment_type = as.factor(insurance_payment_type),
       race = as.factor(race),
       sex = as.factor(sex),
@@ -80,7 +83,7 @@ catfactory = function(df) {
       had_chronic_cond = as.logical(had_chronic_cond),
       had_copd = as.logical(had_copd),
       had_c_artery_prob = as.logical(had_c_artery_prob),
-      had_diabetes = as.logical(had_diabetes),
+      had_diabetes = as.logical(ifelse(had_diabetes != 1, 1, 0)),
       is_on_dialysis = as.logical(is_on_dialysis),
       had_dis_cancer = as.logical(had_dis_cancer),
       had_dvt = as.logical(had_dvt),
@@ -92,19 +95,20 @@ catfactory = function(df) {
       had_pneumonia = as.logical(had_pneumonia),
       had_preop_sepsis = as.logical(had_preop_sepsis),
       had_preop_transfusion = as.logical(had_preop_transfusion),
-      had_sleep_apnea = as.logical(had_sleep_apnea),
-      is_smoker = as.logical(is_smoker),
+      had_sleep_apnea = as.factor(had_sleep_apnea),
+      #is_smoker = as.factor(is_smoker),
       is_on_ventilator = as.logical(is_on_ventilator),
       is_on_beta_blocker = as.logical(is_on_beta_blocker),
       presence_drains = as.factor(presence_drains),
       surgical_approach = as.factor(surgical_approach),
-      asa_class_id = as.factor(presence_drains),
+      asa_class_id = as.factor(asa_class_id),
       had_epidural = as.logical(had_epidural),
       had_cathether = as.logical(had_cathether),
       nerve_block = as.logical(nerve_block),
       on_anticoag = as.factor(on_anticoag),
       had_scd = as.logical(had_scd)
     )
+  
   return(new_df)
 }
 
@@ -170,3 +174,21 @@ lab_states_util = c(
   "Plate Count" = "platecount",
   "WBC" = "wbc"
 )
+
+mapCoeffsToColor = function(coeffs) {
+  colors = map(coeffs, function(val) ifelse(val > 0, 
+                                            'rgba(50, 205, 50, 0.8)', 
+                                            'rgba(222, 45 ,38 ,0.8)'))
+  return(colors)
+}
+
+mapCoeffsToText = function(coeffs) {
+  
+  positiveText = "This coefficient is positive, suggesting that\n its associated odds ratio is greater than 1."
+  negativeText = "This coefficient is negative\n, suggesting that\n its associated odds ratio is less than 1."
+  
+  textOptions = map(coeffs, function(val) ifelse(val > 0,
+                                                 positiveText,
+                                                 negativeText))
+  return(textOptions)
+}
