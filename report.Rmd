@@ -125,7 +125,7 @@ insurance_df = tidy_colectomies %>%
   group_by(insurance_payment_type) %>% 
   summarize(n = n(),
             total_SSI = sum(any_ssi),
-            percent_SSI = total_SSI / n)
+            percent_SSI = 100 * (total_SSI / n))
 
 knitr::kable(insurance_df)
 ```
@@ -219,7 +219,7 @@ We see that there is also an increasing trend in surgical site infections as the
 
 With our literature review and personal exploration of the data, we have a set of variables to use for our logistic regression. With our literature review, we've decided to start with a subset of 20 variables. These candidate variables have been shown to be associated with SSI, so we'll use automatic procedures to further cut down on covariates and get to a more robust, parsimonious model.
 
-```{r sub-selection }
+```{r sub-selection, message = FALSE, warning = FALSE }
 # Selection of 20 candidate covariates for logistic regression
 model_covariates = tidy_colectomies %>% 
   select(any_ssi, surgical_approach, had_etoh,
@@ -245,67 +245,15 @@ full = glm(full_fmla, data = model_covariates, family = binomial())
 step.model = step(null, direction = 'both', scope = list(upper = full))
 ```
 
-
-```{r sub-selection1 }
-
-
-# cor(colectomy_model) # need more succinct way to show this
-# all correlations are below 0.27
-
-fmla = any_ssi ~ surgical_approach + surgical_priority + hypertension + e_diabetes + e_surgical_wound_closure + smoker + bmi + asa_class_id
-
-fit_ssi = glm(fmla, data = model_data)
-
-# What does the model look like? 
-#poop poop
-
-
-
-
-# testing the model validation
-model_data = na.omit(model_data)
-
-# rewrite 
-leaps(x = colectomy_model[,3:10], y = colectomy_model[,1], nbest=2, method="Cp")
-
-
-
-# Use 10-fold validation and create the training sets
-
-data_train = trainControl(method = "cv", number = 10)
-
-# Fit the 4-variables model that we discussed in previous lectures
-cv_model = train(fmla, data = colecto,
-                   trControl = data_train,
-                   method = 'glm',
-                   na.action = na.pass)
-  
-# Model predictions using 4 parts of the data for training 
-model_caret
-mean(fit_mort30$residuals^2)
-#RMSE=0.21, Rsquared=0.1 - bad % variantion acconted for
-```
-
-<<<<<<< HEAD
-make some comments on the regression measures
-=======
-According to Johns Hopkins School of Medicine's post on surgical site infections (ssi), we look at several potential predictor variables such as Being an elderly adult, being overweight, being a diabetic. smoking status, and cancer status[3]. We further checked the statement and almost all the predictors are significant under 1% significance level except diabetes status, wound closure, surgical approach, and hypertension. However, we include all the predictors in our predictor model for better clinical implications.
->>>>>>> d741cbd4365a81ebebbaa30830ed5028eb7f3201
-
-This regression results give the clinical professionals a detailed look at what pre-surgical disease/traits contribute to ssi. Also, it gives patients more information to decide between different options they are given by the doctors.
-
-
-
-
-
-
-
-
-
-
+The resulting stepwise regression results in a model with 23 covariates, with many of them stemming from categorical factors chosen. Out of these covariates, `length_of_stay`, `surgical_approaches` 2, 3 and 4, age, ASA level 3, admission to ICU, surgery time, and BMI remained statistically significant. 
 
 <h1 id="conclusion">Discussion</h1>
 
+We are pleased to see that many of the variables that we found during our literature found themselves in the model and were statistically significant. However, many of the variables that were found to be risk factors in SSI did not end up in the final model or were not statistically significant. Given the large amount of covariates and categorical variables we had to consider, it is highly likely that many elements that would have been included in a more parsimonious model were excluded thanks to the noise introduced by starting with 20 candidates.
+
+Looking at the model coefficients, we can comment on how each factor affects the odds of SSI. High BMI, admission to the ICU, ASA class 3, being a smoker and long surgery times have positive coefficients, meaning that the odds of SSI in patients with these characteristics are higher than those without. Older patients, length of stay and surgical approaches 2 and 3 correspond with negative coefficients, indicating that odds of SSI are reduced in patients with these qualities.
+
+Although far from perfect, our model gives us some insight into what pre-surgical disease/traits contribute to SSI and supports some of the research done on this particular subject. We believe that our results can be improved by starting with more parsimonious models and building the stepwise regression from there.
 
 <h1 id="refs">References</h1>
 
