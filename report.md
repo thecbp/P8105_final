@@ -334,6 +334,58 @@ full = glm(full_fmla, data = model_covariates, family = binomial())
 step.model = step(null, direction = 'both', scope = list(upper = full))
 ```
 
+``` r
+summary(step.model)
+```
+
+    ## 
+    ## Call:
+    ## glm(formula = any_ssi ~ length_of_stay + surgical_approach + 
+    ##     age + asa_class_id + admit_to_icu_postsurg + val_surgtime + 
+    ##     surgical_wound_closure + bmi + is_smoker + had_pneumonia + 
+    ##     had_dvt, family = binomial(), data = model_covariates)
+    ## 
+    ## Deviance Residuals: 
+    ##     Min       1Q   Median       3Q      Max  
+    ## -2.0117  -0.4377  -0.3454  -0.2717   2.8284  
+    ## 
+    ## Coefficients:
+    ##                           Estimate Std. Error z value Pr(>|z|)    
+    ## (Intercept)             -3.432e+00  5.016e-01  -6.842 7.83e-12 ***
+    ## length_of_stay           6.615e-02  4.308e-03  15.355  < 2e-16 ***
+    ## surgical_approach2      -5.464e-01  1.285e-01  -4.252 2.12e-05 ***
+    ## surgical_approach3      -4.785e-01  1.507e-01  -3.175  0.00150 ** 
+    ## surgical_approach4       2.826e-01  1.199e-01   2.357  0.01841 *  
+    ## surgical_approach5      -3.206e-01  2.038e-01  -1.573  0.11572    
+    ## surgical_approach6      -4.147e-02  4.814e-01  -0.086  0.93135    
+    ## surgical_approach7      -6.280e-01  7.233e-01  -0.868  0.38530    
+    ## surgical_approach13     -1.261e+01  6.691e+02  -0.019  0.98496    
+    ## age                     -1.398e-02  2.797e-03  -4.999 5.76e-07 ***
+    ## asa_class_id2            6.548e-01  4.668e-01   1.403  0.16070    
+    ## asa_class_id3            8.157e-01  4.690e-01   1.739  0.08197 .  
+    ## asa_class_id4            2.945e-01  4.829e-01   0.610  0.54200    
+    ## asa_class_id5           -1.461e-01  6.596e-01  -0.221  0.82476    
+    ## asa_class_id7           -1.225e+01  5.330e+02  -0.023  0.98166    
+    ## admit_to_icu_postsurg    4.014e-01  8.330e-02   4.819 1.45e-06 ***
+    ## val_surgtime             1.090e-03  4.185e-04   2.605  0.00918 ** 
+    ## surgical_wound_closure2 -3.722e-01  1.738e-01  -2.142  0.03222 *  
+    ## surgical_wound_closure3 -4.256e-02  2.610e-01  -0.163  0.87044    
+    ## surgical_wound_closure4 -1.327e+01  2.491e+02  -0.053  0.95751    
+    ## bmi                      1.277e-02  4.850e-03   2.633  0.00846 ** 
+    ## is_smoker                1.633e-01  8.742e-02   1.868  0.06173 .  
+    ## had_pneumoniaTRUE       -4.407e-01  3.122e-01  -1.412  0.15800    
+    ## had_dvtTRUE             -2.011e-01  1.410e-01  -1.427  0.15372    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for binomial family taken to be 1)
+    ## 
+    ##     Null deviance: 5866.1  on 9960  degrees of freedom
+    ## Residual deviance: 5327.7  on 9937  degrees of freedom
+    ## AIC: 5375.7
+    ## 
+    ## Number of Fisher Scoring iterations: 14
+
 The resulting stepwise regression results in a model with 23 covariates, with many of them stemming from categorical factors chosen. Out of these covariates, `length_of_stay`, `surgical_approaches` 2, 3 and 4, age, ASA level 3, admission to ICU, surgery time, and BMI remained statistically significant.
 
 <h1 id="conclusion">
