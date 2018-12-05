@@ -127,15 +127,31 @@ insurance_df = tidy_colectomies %>%
   group_by(insurance_payment_type) %>% 
   summarize(n = n(),
             total_SSI = sum(any_ssi),
-            percent_SSI = 100 * (total_SSI / n))
+            percent_SSI = 100 * (total_SSI / n)) %>% 
+  mutate(insurance_payment_type = recode(insurance_payment_type, 
+                                         `1` = "Medicare", 
+                                         `2` = "Medicare + Medicare Supplemental Plan/Medigap Insurance", 
+                        `3` = "Medicaid", `4` = "Medicare AND Medicaid", 
+                        `5` = "Blue Cross Blue Shield of Michigan (BCBSM)", 
+                        `6` = "Private Insurance, incl. HMO plans", 
+                        `7` = "Other", `8` = "Self-Pay", 
+                        `9` = "Uninsured", `10` = "International Patient", 
+                        `11` = "Medicare Advantage Blue Cross Blue Shield of Michigan"))
 
 knitr::kable(insurance_df)
 ```
 
 We can see in the table that insurance types are not evenly distributed over the data. Thus, we need to compare percentages of colectomies that resulted in SSI instead of raw counts.
 
-```{r insurance_plot, warning = FALSE}
-ggplot(data = insurance_df,
+```{r insurance_plot, warning = FALSE, fig.width = 7.5, fig.height = 7, message = FALSE}
+plotinsurance_df = insurance_df %>% 
+  mutate(insurance_payment_type = recode(insurance_payment_type,
+                                         `Medicare + Medicare Supplemental Plan/Medigap Insurance` = "Medicare + \nMedicare Supplemental Plan \n/Medigap Insurance", 
+                        `Blue Cross Blue Shield of Michigan (BCBSM)` = "Blue Cross Blue Shield \nof Michigan (BCBSM)", 
+                        `Private Insurance, incl. HMO plans` = "Private Insurance, \nincl. HMO plans", 
+                        `Medicare Advantage Blue Cross Blue Shield of Michigan` = "Medicare Advantage \n Blue Cross Blue Shield of Michigan"))
+
+ggplot(data = plotinsurance_df,
        aes(x = insurance_payment_type,
            y = percent_SSI,
            fill = insurance_payment_type)) +
@@ -145,21 +161,11 @@ ggplot(data = insurance_df,
     y = "Percent of colecotmies resulting in SSI",
     title = "Insurance Types and SSI"
   ) + 
-  theme(legend.position = "none")
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 50, hjust = 1))
+  
 ```
 
-The insurance payment types are as follows:  
-1. Medicare  
-2. Medicare + Medicare Supplemental Plan/Medigap Insurance  
-3. Medicaid  
-4. Medicare AND Medicaid  
-5. Blue Cross Blue Shield of Michigan (BCBSM)  
-6. Private Insurance, incl. HMO plans  
-7. Other  
-8. Self-Pay  
-9. Uninsured  
-10. International Patient  
-11. Medicare Advantage - Blue Cross Blue Shield of Michigan
 
 In the first table, we can see that the most occurences of SSIs are in patients with Medicare, Medicare + Medicare Supplemental Plan/Medigap Insurance, or those who are uninsured. However, those variables also had the greatest number of patients, so we can't solely rely on the absolute SSI counts to tell us anything useful. We must look at the percentages instead.
 
