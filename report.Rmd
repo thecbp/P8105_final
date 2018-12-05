@@ -1,9 +1,9 @@
 ---
-title: "What's In A Colectomy? An Analysis"
+title: "What's in a colectomy? An Analysis"
 output: github_document
 ---
 
-![Ann Arbor, Michigan](./img/michigan_aerial.jpg)
+![Ann Arbor, Michigan](./img/colons.jpg)
 
 # Table of Contents
 
@@ -32,24 +32,22 @@ Colectomies are surgical procedures that remove all of part of your large intest
 
 ## Project Motivation
 
-We wanted to investigate what factors contribute to increasing or decreasing the risk of post-operative complication using a dataset on colectomies performed from 2014 - 2016 from multiple hospitals in Michigan. Using this data, we want to perform a regression analysis to figure out which variables have an impact on affecting post-surgery complication. 
+For our project, we want to investigate what factors contribute to increasing or decreasing the risk of post-operative complication using a dataset on colectomies performed from 2014 - 2016 from multiple hospitals in Michigan. Using this data, we will perform a regression analysis to figure out which variables have an impact on post-surgery complication. 
 
-We were inspired by the analyses done for Homework 6. Until then, our studies have only ever been focused on simple linear regression, so being able to wield something to predict a binary outcome was exciting. With the binary nature of complication, we thought we could apply the same analyses here to good use.
+This analysis was inspired by the analyses done for Homework 6. Up until that point, our studies have only ever focused on simple and multiple linear regression, so being able to wield another tool was exciting. With the binary nature of complication, we thought we could apply the same analyses to investigating colectomy factors.
 
 ## Project Roadmap
 
-First, we needed to figure out if any other answers have been given for this question. If risk factors have already been established, then theoretically they should contribute significantly to a regression. We also needed to figure out what our outcome could be, since complication after a surgery can take many forms. 
+We needed to figure out if prior research has been done for this question. If risk factors have already been established, then they theoretically should truly contribute to our regression. Next, we figured out what our outcome could be since "complication" after a surgery can be defined in so many ways. After a proper literature review, we had a list of candidate factors for the regression. Before applying the regression, we specifically looked at some of these factors to see if there was an association with colectomy complications. Finally, with all this preparation, we entered these variables into an automatic procedure to get our model.
 
-We ended up deciding to use surgical site infection as our outcome of interest. While we knew that making our own logistic regression would have been easy, we were also interested in creating a modelling application for others. This application would enable interested users to use a subset of the data to create their own models, based on variables that they might find useful or that we may have not considered.
+While we did a literature review to choose our covariates, we felt it would be interesting if we could enable others to create a modelling application to recreate what we did. This application would enable interested users to use a subset of the data to create their own models. They may choose any variables they might find useful or that we may have not considered in our model.
 
 <h1 id="characterize">Data Characterization</h1>
 
-In addition to `tidyverse`, we've created a set of helper functions and variables that we've stored in `utils.R` to save coding space. Our data will be stored in the `colectomies` variable. `leaps` and `caret` are used later for our regression analyses.
+In addition to `tidyverse`, we created a set of helper functions and variables that we've stored in `utils.R` to save coding space. Our data will initially be stored in the `colectomies` variable.
 
 ```{r setup, message = FALSE, warning = FALSE }
-library(caret)
 library(tidyverse)
-library(leaps)
 library(haven)
 source("./utils.R")
 
@@ -65,18 +63,20 @@ theme_set(theme_classic() +
                   plot.title = element_text(hjust = 0.5)))
 
 # Raw data
-colectomies = read_dta(file = './colectomy_raw_new.dta') 
+colectomies = read_dta(file = './data/colectomy_raw_new.dta') 
 ```
 
 In its raw form, the data has `r nrow(colectomies)` rows and `r ncol(colectomies)` columns. Each row corresponds to a single colectomy and an incredible amount of information, including a bevy of laboratory, disease, surgery and patient data. 
 
-A brief glance at the data showed us that many of the columns are useless for our analysis. Many columns contain mostly or only missing data. Before we can start variable selection for our model, we need to tidy up the dataset. 
+A copy of the data is contained [here](https://drive.google.com/open?id=1-cOf82Q-KgXazfYxN-3PjgYA2oSBKriZ) in a Google Drive.
+
+Despite the seemingly sheer size of the data, it has its limitations. A brief glance at the data showed us that many of the columns are useless for our analysis; many columns contain mostly or only missing data. Before we can start variable selection for our model, we need to tidy up the dataset. 
 
 <h1 id="tidying">Tidying the Data</h1>
 
 ## Data Reduction & Cleaning
 
-To start the cleaning, we want to remove all columns that contain more than 50% missing values (either blank cells or `NA`). Furthermore, some of the columns actually contain duplicate information from others. These duplicate columns start with `flg` or `e`. 
+To start the cleaning, we want to remove all columns that contain more than 50% missing values (either blank cells or `NA`). We chose 50% since we've seen this cutoff used in other regression studies. Further adding to the clutter, some columns actually contain duplicate information from others. We found that these duplicate columns always start with `flg` or `e`. 
 
 ```{r data-reduction }
 tidy_colectomies = colectomies %>% 
@@ -89,7 +89,7 @@ Our function, `is_mostly_intact`, helps us identify columns that are more than 5
 
 ## Data Cleaning
 
-Many of the columns in the data appear to be numerical, but are in fact, categorical. Our `catfactory` function in `utils.R` contains all of our retyping code. 
+Many of the columns in the data appear to be numerical, but are in fact, categorical. We performed the retyping with our `catfactory` function in `utils.R`. 
 
 ```{r data-cleaning, message = FALSE, warning = FALSE }
 tidy_colectomies = tidy_colectomies %>%
@@ -97,11 +97,11 @@ tidy_colectomies = tidy_colectomies %>%
   mutate(any_ssi = (postop_ssi_super + postop_ssi_deep + 	postop_ssi_organspace) >= 1)
 ```
 
-The outcome of interest we'll be focusing on is surgical site infection (SSI). After researching more into colectomies, we found that infection was the most common type of complication. We believe that focusing on this aspect of post-operation allows us to narrow down the scope of our analysis, while allowing for the greatest breadth for defining "complication". 
+The outcome of interest we will focus on is surgical site infection (SSI). After researching more into colectomies, we found that infection was the one of the most common types of complication. We considered mortality in the beginning, but given its rarity, we decided to drop it. We believe that focusing on this aspect of post-operation will allow us to narrow down the scope of our analysis while allowing for the greatest breadth of "complication". 
 
-Surgical site infection (SSI) is contained in 3 particular columns (`postop_ssi_super`,  `postop_ssi_deep` and `postop_ssi_organspace`) in the dataset, which we'll compile into one summary variable `any_ssi`.
+Surgical site infection (SSI) is contained in 3 particular columns (`postop_ssi_super`,  `postop_ssi_deep` and `postop_ssi_organspace`) in the dataset, which we compile into one summary variable: `any_ssi`.
 
-Even with all of the data reduction, there are still too many variables to know which to include in the regression. To aid in variable selection, we did a literature review to see what has relationships have been established. 
+Despite the heavy data reduction, too many variables remain to know to just toss into a stepwise regression. We performed a literature review to see what relationships have been established. 
 
 <h1 id="lit">Literature Review: Relevant Factors</h1>
 
@@ -109,15 +109,15 @@ Thankfully, several factors have been identified as risk factors for complicatio
 
 Ko et. al found that certain diseases were associated with increased risk of death post-colectomy, including venous thromboembolism (VTE), sepsis, acute myocardial infarction, pneumonia, respiratory failure and shock<sup>[3](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>.
 
-In another paper, Tang et. al focuses on risk factors associated with surgical site infection, our outcome of interest. Dr. Tang identified ASA score, blood transfusion, drainage use, and sex<sup>[4](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004)</sup>.
+In another paper, Tang et. al focused on risk factors associated with surgical site infection, our outcome of interest. Dr. Tang identified ASA score, blood transfusion, drainage use, and sex<sup>[4](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004)</sup>.
 
-With these papers in mind, we know to include these in our regression analyses. We selected a few of these variables and others to explore more in our subanalyses below.
+With these papers in mind, we know it would be best to include these variables. We selected a few of these variables to visualize their relationship with SSI in the cleaned dataset.
 
 <h1 id="sub">Subanalyses</h1>
 
 ### Is there a relationship between SSI and insurance status?
 
-One variable we thought would have a relationship to SSI was a patient's insurance status. We believed that patients with little to no coverage would be forced to go to less experienced hospitals and experience more SSI. To confirm or deny this belief, we looked at how SSIs were distributed by insurance staus. 
+One variable we thought would have a relationship to SSI was insurance status. We believed that patients with little to no coverage would be forced to go to less experienced hospitals and experience more SSI. To confirm or deny this belief, we looked at how SSIs were distributed by insurance staus. 
 
 ```{r insurance_analysis, warning = FALSE, message = FALSE }
 insurance_df = tidy_colectomies %>% 
@@ -141,7 +141,7 @@ insurance_df = tidy_colectomies %>%
 knitr::kable(insurance_df)
 ```
 
-We can see in the table that insurance types are not evenly distributed over the data. Thus, we need to compare percentages of colectomies that resulted in SSI instead of raw counts.
+In the first table, we can see that most SSIs are in patients with Medicare, Medicare + Medicare Supplemental Plan/Medigap Insurance, or the uninsured. However, these groups also represent the greatest number of patients, so we can't solely rely on the absolute SSI counts to tell us anything useful. We must look at the percentages instead.
 
 ```{r insurance_plot, warning = FALSE, fig.width = 7.5, fig.height = 7, message = FALSE}
 plotinsurance_df = insurance_df %>% 
@@ -166,26 +166,23 @@ ggplot(data = plotinsurance_df,
   
 ```
 
+In the second plot, we can see the percentage of SSI occurences out of the total number of colectomies performed based on insurance type. There is generally no distinction between the insurance types, with most of the percentages hovering between 6 to 12 percent. Noticeably, patients with private insurance had a much higher percentage of SSIs at above 25 percent while patients with other insurance had 0 percent. However, this is most likely an artifact of the small sample size of this type of insurance.
 
-In the first table, we can see that the most occurences of SSIs are in patients with Medicare, Medicare + Medicare Supplemental Plan/Medigap Insurance, or those who are uninsured. However, those variables also had the greatest number of patients, so we can't solely rely on the absolute SSI counts to tell us anything useful. We must look at the percentages instead.
-
-In the second plot, we can see the percentage of SSI occurences out of the total number of colectomies performed based on insurance type. There is generally no distinction between the insurance types, with most of the percentages hovering between 6 to 12 percent. Noticeably, patients with private insurance had a much higher percentage of SSIs at above 25 percent while patients with other insurance had 0 percent. However, this is most likely due to the small sample size of patients with those types of insurance and should not affect our conclusions.
-
-In the end, our hypotheses was incorrect; there was seemingly no relationship between insurance type and occurence of SSIs. This result indicates it would be a poor candidate for predicting SSI.
+In the end, our hypotheses was incorrect; there was seemingly no relationship between insurance type and occurence of SSIs. This result indicates it may be a poor candidate for predicting SSI.
 
 ### How are SSI distributed in patients with different diseases and prior conditions? (Tiffany's Analysis)
 
-The Ko paper names multiple diseases that are associated with increased risk of SSI. Our dataset contains information on many of these diseases, so we wanted to investigate if our data supports any of Ko's findings. We have the following data below that corresponds to the paper:
+The Ko paper names multiple diseases that are associated with increased risk of SSI. Our dataset contains information on many of these diseases, so we wanted to investigate if our data supports any of Ko's findings. The following list corresponds to data we have that's also in the Ko paper. We've also included other conditions to see for any more potential associations.
 
   * Smoker: Tobacco use within 1 year
-  * Etoh: >2 drinks/day two weeks prior to surgery
+  * EtOH: >2 drinks/day two weeks prior to surgery
   * Body Weight Loss: 10% of body weight loss 6 months prior to surgery
-  * Chf: Congestive Heart Failure within 30 days prior to surgery
-  * Scd : Specific Carbohydrate Diet
-  * Copd: Chronic Obstructive Pulmonary Disease
-  * Dvt: Deep Vein Thrombosis
-  * Chronic Condition: steriods, immunosuppresive meds
-  * Preop-transfusion: RBCs within 72 hours of surgery
+  * CHF: Congestive Heart Failure within 30 days prior to surgery
+  * SCD : Specific Carbohydrate Diet
+  * COPD: Chronic Obstructive Pulmonary Disease
+  * DVT: Deep Vein Thrombosis
+  * Chronic Condition: steroids, immunosuppresive medicines
+  * Preop-transfusion: received red blood cells within 72 hours of surgery
   * Ventilator: ventilator dependent
 
 ```{r gathering-diseases, include = FALSE }
@@ -228,7 +225,7 @@ We can see in the dataset that many of these conditions/diseases are relatively 
 
 #### SSI and death association to each health condition
 
-To see how often a condition is related to SSI, we used a heatmap to see if any are particularly associated with SSI. We also looked at death as an outcome to see if any of these diseases are associated with it.
+To see how often a condition is related to SSI, we use a heatmap to look for any particularly high rates of association. We also looked at death as an outcome to see if any of these diseases are associated with it.
 
 ```{r givin-the-heat, fig.width = 7.5, fig.height = 6}
 heatplot = healthdisease %>% 
@@ -255,7 +252,7 @@ ggplot(data = heatplot, aes(x = status, y = condition, fill = score)) +
 
 Comparing number of death and SSI cases side by side with each health condition, we see a nearly symmetric heatmap. There are fewer cases under patients that actually got SSI or died from the operation, so it is difficult to conclude any direct relationship between health condition and surgery outcome. Intrestingly, we can see that there are a great number of successful cases for patients with sleep apnea, specific carbohydrate diet, and hypertension related ot SSI. 
 
-### How is surgical time distributed across the dataset
+### How is surgical time distributed across the dataset?
 
 Tang pointed out that SSI is associated with long surgery times. This makes sense since patients are more likely to get infected the longer they're under the knife. We'll look at the distribution of surgery times in the dataset to see if there's any outliers.
 
@@ -273,7 +270,7 @@ tidy_colectomies %>%
 
 Most of the surgeries last around 250 minutes, but we can see that there is a heavy tail on the right. We've included all cases here, so next we'll split up the colectomies that result in SSI and those that don't and compare their distribution.
 
-```{r ssi-vs-asa-plot }
+```{r surg-time-comparison-plot }
 tidy_colectomies %>% 
   select(val_surgtime, any_ssi) %>% 
   ggplot(data = ., aes(x = val_surgtime, fill = any_ssi)) + 
@@ -287,9 +284,11 @@ tidy_colectomies %>%
 
 Although there are some SSI-related surgeries that look to take longer than non-SSI colectomies, both follow a similar distribution. Thus, we cannot definitively say that the surgery time can help differentiate between SSI cases and non-SSI cases based on the plot.
 
+Our subanalyses demonstrate that many of the factors we found in the literature review are seemingly not associated with SSI. We believe that this may be due to differences in types of infection in our dataset and those studied in the papers. In light of our subanalyses, we will still include them in the regression analysis.
+
 <h1 id="regress">Regression Analysis</h1>
 
-With our literature review and personal exploration of the data, we have a set of variables to use for our logistic regression. With our literature review, we've decided to start with a subset of 20 variables. These candidate variables have been shown to be associated with SSI, so we'll use automatic procedures to further cut down on covariates and get to a more robust, parsimonious model.
+With our literature review and personal exploration of the data, we have a set of variables to use for our logistic regression. After much debate we decided to analyze a subset of 20 variables. These candidate variables have been shown to be associated with SSI, so we'll use automatic procedures to further cut down on covariates and attempt to get to a more robust, parsimonious model.
 
 ```{r sub-selection, message = FALSE, warning = FALSE, results = 'hide' }
 # Selection of 20 candidate covariates for logistic regression
@@ -327,6 +326,8 @@ Looking at the model coefficients, we can comment on how each factor affects the
 
 Although far from perfect, our model gives us some insight into what pre-surgical disease/traits contribute to SSI and supports some of the research done on this particular subject. We believe that our results can be improved by starting with more parsimonious models and building the stepwise regression from there.
 
+We believe this analysis could be improved by focusing on particular subsets of patients who contract infections. We know that colectomies are performed for many different conditions, so different diseases may contribute differently to how patients may be infected.
+
 <h1 id="changes">Changes Mid-Report</h1>
 
 During the course of the project, we were unsure whether we should use SSI or death as an outcome. As we started wrangling with the data and reviewing the literature, we realized that more research has been done on SSI. Furthermore, we also found out that death due to colectomy was a rare outcome. These two factors led us to focus on SSI in the subanalyses and regression.
@@ -335,7 +336,6 @@ One particularly contentious issue for our project was actually our Shiny applic
 
 <h1 id="refs">References</h1>
 
-Reference
 1. Wikipedia: ASA physical status classification system
 2. http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
 3. http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/
