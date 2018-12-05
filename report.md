@@ -28,7 +28,7 @@ Table of Contents
 <h1 id="intro">
 Introduction
 </h1>
-Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years <sup><a href ="https://www.medscape.org/viewarticle/711126">1</a></sup>.
+Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years. <sup><a href ="https://www.medscape.org/viewarticle/711126">1</a></sup>
 
 Project Motivation
 ------------------
@@ -113,11 +113,11 @@ Despite the heavy data reduction, too many variables remain to know to just toss
 <h1 id="lit">
 Literature Review: Relevant Factors
 </h1>
-Thankfully, several factors have been identified as risk factors for complications in colorectal surgery. Kirchoff established many risk factors in a 2010 paper on the subject. The paper found that age, gender, prior surgery, obesity, nutritional status and body weight loss were patient-related factors. Factors that were related to the surgery itself included: open access to abdominal cavity, blood loss, surgical approach switches and length of operating time <sup>[2](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>.
+Thankfully, several factors have been identified as risk factors for complications in colorectal surgery. Kirchoff established many risk factors in a 2010 paper on the subject. The paper found that age, gender, prior surgery, obesity, nutritional status and body weight loss were patient-related factors. Factors that were related to the surgery itself included: open access to abdominal cavity, blood loss, surgical approach switches and length of operating time. <sup><a href="https://www.ncbi.nlm.nih.gov/pubmed/27765178">2</a></sup>
 
-Ko et. al found that certain diseases were associated with increased risk of death post-colectomy, including venous thromboembolism (VTE), sepsis, acute myocardial infarction, pneumonia, respiratory failure and shock <sup>[3](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>.
+Ko et. al found that certain diseases were associated with increased risk of death post-colectomy, including venous thromboembolism (VTE), sepsis, acute myocardial infarction, pneumonia, respiratory failure and shock. <sup>[3](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>
 
-In another paper, Tang et. al focused on risk factors associated with surgical site infection, our outcome of interest. Dr. Tang identified ASA score, blood transfusion, drainage use, and sex <sup>[4](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004)</sup>.
+In another paper, Tang et. al focused on risk factors associated with surgical site infection, our outcome of interest. Dr. Tang identified ASA score, blood transfusion, drainage use, and sex. <sup>[4](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004)</sup>
 
 With these papers in mind, we know it would be best to include these variables. We selected a few of these variables to visualize their relationship with SSI in the cleaned dataset.
 
