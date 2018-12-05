@@ -409,10 +409,11 @@ One particularly contentious issue for our project was actually our Shiny applic
 <h1 id="refs">
 References
 </h1>
--   Wikipedia: ASA physical status classification system
--   <http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease>
--   <http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/>
--   <https://www.medscape.org/viewarticle/711126>
--   <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382>
--   <https://www.ncbi.nlm.nih.gov/pubmed/27765178>
--   <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004>
+
+- Wikipedia: ASA physical status classification system
+- http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
+- http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/
+- https://www.medscape.org/viewarticle/711126
+- https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382
+- https://www.ncbi.nlm.nih.gov/pubmed/27765178
+- https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004
