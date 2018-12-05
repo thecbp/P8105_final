@@ -18,9 +18,8 @@ ui = fluidPage(
     sidebarPanel(
       
       helpText("You are in charge of creating a new model for predicting post-colectomy infections! 
-                Choose a few variables below and see how your model turns out. You may see how 
-                statistically significant your coefficients are as well as your model's 
-               predictive ability."),
+                Choose a few variables below and see how your model turns out. You may see how large
+               your coefficients are as well as their corresponding odds ratios."),
       
       
       # Picker for patient variables
@@ -81,7 +80,7 @@ ui = fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Coefficient Magnitudes", plotlyOutput("coeffsGraph")),
-        tabPanel("Statistical Significance", plotlyOutput("statsGraph"))
+        tabPanel("Odds Ratios", plotlyOutput("statsGraph"))
       )
       
       )
