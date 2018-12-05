@@ -28,7 +28,7 @@ Table of Contents
 <h1 id="intro">
 Introduction
 </h1>
-Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years<sup>[1](https://www.medscape.org/viewarticle/711126)</sup>.
+Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years <sup>[1](https://www.medscape.org/viewarticle/711126)</sup>.
 
 Project Motivation
 ------------------
@@ -113,11 +113,11 @@ Despite the heavy data reduction, too many variables remain to know to just toss
 <h1 id="lit">
 Literature Review: Relevant Factors
 </h1>
-Thankfully, several factors have been identified as risk factors for complications in colorectal surgery. Kirchoff established many risk factors in a 2010 paper on the subject. The paper found that age, gender, prior surgery, obesity, nutritional status and body weight loss were patient-related factors. Factors that were related to the surgery itself included: open access to abdominal cavity, blood loss, surgical approach switches and length of operating time<sup>[2](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>.
+Thankfully, several factors have been identified as risk factors for complications in colorectal surgery. Kirchoff established many risk factors in a 2010 paper on the subject. The paper found that age, gender, prior surgery, obesity, nutritional status and body weight loss were patient-related factors. Factors that were related to the surgery itself included: open access to abdominal cavity, blood loss, surgical approach switches and length of operating time <sup>[2](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>.
 
-Ko et. al found that certain diseases were associated with increased risk of death post-colectomy, including venous thromboembolism (VTE), sepsis, acute myocardial infarction, pneumonia, respiratory failure and shock<sup>[3](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>.
+Ko et. al found that certain diseases were associated with increased risk of death post-colectomy, including venous thromboembolism (VTE), sepsis, acute myocardial infarction, pneumonia, respiratory failure and shock <sup>[3](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>.
 
-In another paper, Tang et. al focused on risk factors associated with surgical site infection, our outcome of interest. Dr. Tang identified ASA score, blood transfusion, drainage use, and sex<sup>[4](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004)</sup>.
+In another paper, Tang et. al focused on risk factors associated with surgical site infection, our outcome of interest. Dr. Tang identified ASA score, blood transfusion, drainage use, and sex <sup>[4](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004)</sup>.
 
 With these papers in mind, we know it would be best to include these variables. We selected a few of these variables to visualize their relationship with SSI in the cleaned dataset.
 
@@ -308,6 +308,7 @@ Our subanalyses demonstrate that many of the factors we found in the literature 
 <h1 id="regress">
 Regression Analysis
 </h1>
+
 With our literature review and personal exploration of the data, we have a set of variables to use for our logistic regression. After much debate we decided to analyze a subset of 20 variables. These candidate variables have been shown to be associated with SSI, so we'll use automatic procedures to further cut down on covariates and attempt to get to a more robust, parsimonious model.
 
 ``` r
@@ -393,6 +394,7 @@ The resulting stepwise regression results in a model with 23 covariates, with ma
 <h1 id="conclusion">
 Discussion
 </h1>
+
 We are pleased to see that many of the variables that we found during our literature found themselves in the model and were statistically significant. However, many of the variables that were found to be risk factors in SSI did not end up in the final model or were not statistically significant. Given the large amount of covariates and categorical variables we had to consider, it is highly likely that many elements that would have been included in a more parsimonious model were excluded thanks to the noise introduced by starting with 20 candidates.
 
 Looking at the model coefficients, we can comment on how each factor affects the odds of SSI. High BMI, admission to the ICU, ASA class 3, being a smoker and long surgery times have positive coefficients, meaning that the odds of SSI in patients with these characteristics are higher than those without. Older patients, length of stay and surgical approaches 2 and 3 correspond with negative coefficients, indicating that odds of SSI are reduced in patients with these qualities.
@@ -404,6 +406,7 @@ We believe this analysis could be improved by focusing on particular subsets of 
 <h1 id="changes">
 Changes Mid-Report
 </h1>
+
 During the course of the project, we were unsure whether we should use SSI or death as an outcome. As we started wrangling with the data and reviewing the literature, we realized that more research has been done on SSI. Furthermore, we also found out that death due to colectomy was a rare outcome. These two factors led us to focus on SSI in the subanalyses and regression.
 
 One particularly contentious issue for our project was actually our Shiny application. Given that we had data from multiple hospitals in Michigan, we wanted to create a tool to recommend hospitals to patients given some location data. However, we quickly ran into a roadblock: there was no location information in our dataset. Since we were doing a regression analysis, we decided to opt for a more educational tool instead. Now our Shiny app just allows a user to create their own regression tool and see what the results are.
