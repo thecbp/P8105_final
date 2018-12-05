@@ -193,7 +193,7 @@ In the second plot, we can see the percentage of SSI occurences out of the total
 
 In the end, our hypotheses was incorrect; there was seemingly no relationship between insurance type and occurence of SSIs. This result indicates it may be a poor candidate for predicting SSI.
 
-### How are SSI distributed in patients with different diseases and prior conditions? (Tiffany's Analysis)
+### How are SSI distributed in patients with different diseases and prior conditions?
 
 The Ko paper names multiple diseases that are associated with increased risk of SSI. Our dataset contains information on many of these diseases, so we wanted to investigate if our data supports any of Ko's findings. The following list corresponds to data we have that's also in the Ko paper. We've also included other conditions to see for any more potential associations.
 
@@ -409,10 +409,10 @@ One particularly contentious issue for our project was actually our Shiny applic
 <h1 id="refs">
 References
 </h1>
-1.  Wikipedia: ASA physical status classification system
-2.  <http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease>
-3.  <http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/>
-4.  <https://www.medscape.org/viewarticle/711126>
-5.  <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382>
-6.  <https://www.ncbi.nlm.nih.gov/pubmed/27765178>
-7.  <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004>
+-   Wikipedia: ASA physical status classification system
+-   <http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease>
+-   <http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/>
+-   <https://www.medscape.org/viewarticle/711126>
+-   <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382>
+-   <https://www.ncbi.nlm.nih.gov/pubmed/27765178>
+-   <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004>
