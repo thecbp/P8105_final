@@ -28,7 +28,7 @@ Table of Contents
 <h1 id="intro">
 Introduction
 </h1>
-Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years. <sup><a href ="https://www.medscape.org/viewarticle/711126">1</a></sup>
+Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years. <sup>[1](https://www.medscape.org/viewarticle/711126)</sup>
 
 Project Motivation
 ------------------
@@ -78,7 +78,6 @@ Despite the seemingly sheer size of the data, it has its limitations. A brief gl
 <h1 id="tidying">
 Tidying the Data
 </h1>
-
 Data Reduction & Cleaning
 -------------------------
 
@@ -101,7 +100,7 @@ Many of the columns in the data appear to be numerical, but are in fact, categor
 ``` r
 tidy_colectomies = tidy_colectomies %>%
   catfactory(.) %>% 
-  mutate(any_ssi = (postop_ssi_super + postop_ssi_deep + postop_ssi_organspace) >= 1)
+  mutate(any_ssi = (postop_ssi_super + postop_ssi_deep +    postop_ssi_organspace) >= 1)
 ```
 
 The outcome of interest we will focus on is surgical site infection (SSI). After researching more into colectomies, we found that infection was the one of the most common types of complication. We considered mortality in the beginning, but given its rarity, we decided to drop it. We believe that focusing on this aspect of post-operation will allow us to narrow down the scope of our analysis while allowing for the greatest breadth of "complication".
@@ -113,7 +112,7 @@ Despite the heavy data reduction, too many variables remain to know to just toss
 <h1 id="lit">
 Literature Review: Relevant Factors
 </h1>
-Thankfully, several factors have been identified as risk factors for complications in colorectal surgery. Kirchoff established many risk factors in a 2010 paper on the subject. The paper found that age, gender, prior surgery, obesity, nutritional status and body weight loss were patient-related factors. Factors that were related to the surgery itself included: open access to abdominal cavity, blood loss, surgical approach switches and length of operating time. <sup><a href="https://www.ncbi.nlm.nih.gov/pubmed/27765178">2</a></sup>
+Thankfully, several factors have been identified as risk factors for complications in colorectal surgery. Kirchoff established many risk factors in a 2010 paper on the subject. The paper found that age, gender, prior surgery, obesity, nutritional status and body weight loss were patient-related factors. Factors that were related to the surgery itself included: open access to abdominal cavity, blood loss, surgical approach switches and length of operating time. <sup>[2](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>
 
 Ko et. al found that certain diseases were associated with increased risk of death post-colectomy, including venous thromboembolism (VTE), sepsis, acute myocardial infarction, pneumonia, respiratory failure and shock. <sup>[3](https://www.ncbi.nlm.nih.gov/pubmed/27765178)</sup>
 
@@ -124,7 +123,6 @@ With these papers in mind, we know it would be best to include these variables. 
 <h1 id="sub">
 Subanalyses
 </h1>
-
 ### Is there a relationship between SSI and insurance status?
 
 One variable we thought would have a relationship to SSI was insurance status. We believed that patients with little to no coverage would be forced to go to less experienced hospitals and experience more SSI. To confirm or deny this belief, we looked at how SSIs were distributed by insurance staus.
@@ -265,7 +263,7 @@ ggplot(data = heatplot, aes(x = status, y = condition, fill = score)) +
 
 Comparing number of death and SSI cases side by side with each health condition, we see a nearly symmetric heatmap. There are fewer cases under patients that actually got SSI or died from the operation, so it is difficult to conclude any direct relationship between health condition and surgery outcome. Intrestingly, we can see that there are a great number of successful cases for patients with sleep apnea, specific carbohydrate diet, and hypertension related ot SSI.
 
-### How is surgical time distributed across the dataset?
+### How is surgery time distributed across the dataset?
 
 Tang pointed out that SSI is associated with long surgery times. This makes sense since patients are more likely to get infected the longer they're under the knife. We'll look at the distribution of surgery times in the dataset to see if there's any outliers.
 
@@ -289,15 +287,13 @@ Most of the surgeries last around 250 minutes, but we can see that there is a he
 tidy_colectomies %>% 
   select(val_surgtime, any_ssi) %>% 
   ggplot(data = ., aes(x = val_surgtime, fill = any_ssi)) + 
-  geom_density(bins = 100, alpha = 0.5) +
+  geom_density(alpha = 0.5) +
   labs(
     title = "Distribution of surgery times in the dataset",
     x = "Surgery time (minutes)",
     y = "Frequency"
   )
 ```
-
-    ## Warning: Ignoring unknown parameters: bins
 
 <img src="report_files/figure-markdown_github/surg-time-comparison-plot-1.png" width="90%" />
 
@@ -308,7 +304,6 @@ Our subanalyses demonstrate that many of the factors we found in the literature 
 <h1 id="regress">
 Regression Analysis
 </h1>
-
 With our literature review and personal exploration of the data, we have a set of variables to use for our logistic regression. After much debate we decided to analyze a subset of 20 variables. These candidate variables have been shown to be associated with SSI, so we'll use automatic procedures to further cut down on covariates and attempt to get to a more robust, parsimonious model.
 
 ``` r
@@ -394,7 +389,6 @@ The resulting stepwise regression results in a model with 23 covariates, with ma
 <h1 id="conclusion">
 Discussion
 </h1>
-
 We are pleased to see that many of the variables that we found during our literature found themselves in the model and were statistically significant. However, many of the variables that were found to be risk factors in SSI did not end up in the final model or were not statistically significant. Given the large amount of covariates and categorical variables we had to consider, it is highly likely that many elements that would have been included in a more parsimonious model were excluded thanks to the noise introduced by starting with 20 candidates.
 
 Looking at the model coefficients, we can comment on how each factor affects the odds of SSI. High BMI, admission to the ICU, ASA class 3, being a smoker and long surgery times have positive coefficients, meaning that the odds of SSI in patients with these characteristics are higher than those without. Older patients, length of stay and surgical approaches 2 and 3 correspond with negative coefficients, indicating that odds of SSI are reduced in patients with these qualities.
@@ -406,7 +400,6 @@ We believe this analysis could be improved by focusing on particular subsets of 
 <h1 id="changes">
 Changes Mid-Report
 </h1>
-
 During the course of the project, we were unsure whether we should use SSI or death as an outcome. As we started wrangling with the data and reviewing the literature, we realized that more research has been done on SSI. Furthermore, we also found out that death due to colectomy was a rare outcome. These two factors led us to focus on SSI in the subanalyses and regression.
 
 One particularly contentious issue for our project was actually our Shiny application. Given that we had data from multiple hospitals in Michigan, we wanted to create a tool to recommend hospitals to patients given some location data. However, we quickly ran into a roadblock: there was no location information in our dataset. Since we were doing a regression analysis, we decided to opt for a more educational tool instead. Now our Shiny app just allows a user to create their own regression tool and see what the results are.
@@ -414,11 +407,7 @@ One particularly contentious issue for our project was actually our Shiny applic
 <h1 id="refs">
 References
 </h1>
-
-1. Wikipedia: ASA physical status classification system
-2. http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
-3. http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/
-4. https://www.medscape.org/viewarticle/711126
-5. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382
-6. https://www.ncbi.nlm.nih.gov/pubmed/27765178
-7. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004
+1.  <https://www.medscape.org/viewarticle/711126>
+2.  <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382>
+3.  <https://www.ncbi.nlm.nih.gov/pubmed/27765178>
+4.  <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004>
