@@ -28,7 +28,7 @@ Table of Contents
 <h1 id="intro">
 Introduction
 </h1>
-Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years <sup>[1](https://www.medscape.org/viewarticle/711126)</sup>.
+Colectomies are surgical procedures that remove all of part of your large intestine. These surgeries are performed for various reasons, ranging from bowel obstruction to colon cancer. Over 250,000 colectomies are performed each year in the United States alone, representing an estimated 10% of the total volume of general surgeries. Given the prolific nature of the surgery, the rate of post-operation complication is astounding: the average rate of complication approached 30% in the last 10 years <sup><a href ="https://www.medscape.org/viewarticle/711126">1</a></sup>.
 
 Project Motivation
 ------------------
