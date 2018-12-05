@@ -61,10 +61,11 @@ knitr::opts_chunk$set(
 # Set the plot design
 theme_set(theme_classic() + 
             theme(legend.position = "bottom", 
+                  legend.key.size = unit(1.5, "line"),
                   plot.title = element_text(hjust = 0.5)))
 
 # Raw data
-colectomies = read_dta(file = './data/colectomy_raw_new.dta') 
+colectomies = read_dta(file = './colectomy_raw_new.dta') 
 ```
 
 In its raw form, the data has `r nrow(colectomies)` rows and `r ncol(colectomies)` columns. Each row corresponds to a single colectomy and an incredible amount of information, including a bevy of laboratory, disease, surgery and patient data. 
@@ -223,10 +224,12 @@ We can see in the dataset that many of these conditions/diseases are relatively 
 
 To see how often a condition is related to SSI, we used a heatmap to see if any are particularly associated with SSI. We also looked at death as an outcome to see if any of these diseases are associated with it.
 
-```{r givin-the-heat }
+```{r givin-the-heat, fig.width = 7.5, fig.height = 6}
 heatplot = healthdisease %>% 
   mutate(death_status = recode(death_status, `3` = "No death", `1` = "Died intraop", 
-                        `2` = "Died within 30 days postop")) %>%
+                        `2` = "Died within 30 days postop"), 
+         any_ssi = as.character(any_ssi),
+         any_ssi = recode(any_ssi, `TRUE` = "SSI", `FALSE` = "No SSI")) %>%
   na.omit() %>% 
   gather(condition, score, -death_status, -any_ssi) %>%
   gather(key, status, -condition, -score) %>% 
@@ -236,8 +239,7 @@ heatplot = healthdisease %>%
 ggplot(data = heatplot, aes(x = status, y = condition, fill = score)) + 
   geom_tile() + 
   scale_fill_distiller(palette = "RdYlBu") +
-  theme(axis.text.x = element_text(angle = 40, hjust = 1), 
-        legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
   labs(
     title = "Correlation of SSI and death to diseases and conditions",
     x = "SSI or Death",
