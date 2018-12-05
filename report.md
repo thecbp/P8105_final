@@ -78,6 +78,7 @@ Despite the seemingly sheer size of the data, it has its limitations. A brief gl
 <h1 id="tidying">
 Tidying the Data
 </h1>
+
 Data Reduction & Cleaning
 -------------------------
 
@@ -100,7 +101,7 @@ Many of the columns in the data appear to be numerical, but are in fact, categor
 ``` r
 tidy_colectomies = tidy_colectomies %>%
   catfactory(.) %>% 
-  mutate(any_ssi = (postop_ssi_super + postop_ssi_deep +    postop_ssi_organspace) >= 1)
+  mutate(any_ssi = (postop_ssi_super + postop_ssi_deep + postop_ssi_organspace) >= 1)
 ```
 
 The outcome of interest we will focus on is surgical site infection (SSI). After researching more into colectomies, we found that infection was the one of the most common types of complication. We considered mortality in the beginning, but given its rarity, we decided to drop it. We believe that focusing on this aspect of post-operation will allow us to narrow down the scope of our analysis while allowing for the greatest breadth of "complication".
@@ -123,6 +124,7 @@ With these papers in mind, we know it would be best to include these variables. 
 <h1 id="sub">
 Subanalyses
 </h1>
+
 ### Is there a relationship between SSI and insurance status?
 
 One variable we thought would have a relationship to SSI was insurance status. We believed that patients with little to no coverage would be forced to go to less experienced hospitals and experience more SSI. To confirm or deny this belief, we looked at how SSIs were distributed by insurance staus.
@@ -410,10 +412,10 @@ One particularly contentious issue for our project was actually our Shiny applic
 References
 </h1>
 
-- Wikipedia: ASA physical status classification system
-- http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
-- http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/
-- https://www.medscape.org/viewarticle/711126
-- https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382
-- https://www.ncbi.nlm.nih.gov/pubmed/27765178
-- https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004
+1. Wikipedia: ASA physical status classification system
+2. http://www.webmd.com/digestive-disorders/partial-colectomy-for-diverticular-disease
+3. http://www.hopkinsmedicine.org/healthlibrary/conditions/surgical_care/surgical_site_infections_134,144/
+4. https://www.medscape.org/viewarticle/711126
+5. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2852382
+6. https://www.ncbi.nlm.nih.gov/pubmed/27765178
+7. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1422004
